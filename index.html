@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NeatPic · 羽帧集</title>
+<style>
+:root{
+  --bg:#f4f6fa; --surface:#fff; --surface-2:#f0f3f8;
+  --line:#e3e9f2; --line-s:#cdd6e8;
+  --ink:#1a2233; --ink-2:#566070; --ink-3:#9aa4b4;
+  --accent:#2f7cf6; --accent-soft:#e8f1ff; --accent-2:#17c2a6;
+  --ok:#17c28a; --warn:#f5a623; --danger:#ef5d6b;
+  --c-thirds:#ff6464; --c-golden:#ffb432; --c-sym:#46d77a; --c-diag:#5f96ff;
+  --r-sm:8px; --r-md:12px; --r-lg:18px;
+  --sh1:0 1px 3px rgba(26,34,51,.05),0 2px 8px rgba(26,34,51,.06);
+  --font:-apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input,select{font-family:inherit;}
+
+/* ── app shell ── */
+.app{display:grid;grid-template-rows:56px 1fr;height:100vh;}
+
+/* ── topbar ── */
+.topbar{display:flex;align-items:center;gap:14px;padding:0 18px;
+  background:var(--surface);border-bottom:1px solid var(--line);z-index:20;}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);}
+.brand-logo{height:32px;width:auto;display:block;border-radius:7px;}
+.brand-logo-fallback{width:32px;height:32px;border-radius:7px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;}
+.brand-name{font-weight:700;font-size:15px;}
+.brand-sub{color:var(--ink-3);font-size:12px;margin-left:1px;}
+
+.pipe{display:flex;align-items:center;gap:12px;margin-left:2px;}
+.pstage{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-2);}
+.pipe-arr{color:var(--ink-3);font-size:11px;margin:0 -4px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex-shrink:0;}
+.dot.on{background:var(--ok);box-shadow:0 0 0 3px rgba(23,194,138,.15);}
+.dot.busy{background:var(--warn);box-shadow:0 0 0 3px rgba(245,166,35,.18);animation:blink 1.2s infinite;}
+@keyframes blink{50%{opacity:.3;}}
+
+.top-r{margin-left:auto;display:flex;align-items:center;gap:9px;}
+/* 上传按钮 */
+.upload-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;
+  border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-2);font-size:13px;transition:.15s;}
+.upload-btn:hover{border-color:var(--line-s);color:var(--ink);}
+.upload-btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;}
+.upload-btn.pri:hover{background:#2569d8;}
+.dev-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2);
+  background:var(--surface-2);padding:5px 11px;border-radius:999px;border:1px solid var(--line);}
+.icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-2);display:grid;place-items:center;font-size:14px;}
+.icon-btn:hover{border-color:var(--line-s);color:var(--ink);}
+
+/* ── main ── */
+.main{display:grid;grid-template-columns:196px 1fr;overflow:hidden;}
+
+/* ── sidebar ── */
+.sidebar{background:var(--surface);border-right:1px solid var(--line);
+  padding:12px 10px;display:flex;flex-direction:column;gap:3px;}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 11px;
+  border-radius:var(--r-md);color:var(--ink-2);width:100%;text-align:left;font-size:13.5px;}
+.nav-btn .ic{font-size:15px;width:18px;text-align:center;}
+.nav-btn:hover{background:var(--surface-2);color:var(--ink);}
+.nav-btn.active{background:var(--accent-soft);color:var(--accent);font-weight:600;}
+.nav-sep{height:1px;background:var(--line);margin:8px 4px;}
+.sidebar .flex1{flex:1;}
+.dev-card{background:var(--surface-2);border-radius:var(--r-md);
+  padding:11px 12px;font-size:12px;color:var(--ink-2);border:1px solid var(--line);}
+.dev-card .dct{color:var(--ink);font-weight:600;margin-bottom:7px;}
+.dcr{display:flex;justify-content:space-between;margin-top:4px;}
+
+/* ── content ── */
+.content{overflow:auto;padding:20px 24px;}
+.ph{margin-bottom:16px;}
+.ph h1{font-size:18px;font-weight:700;margin-bottom:3px;}
+.ph p{color:var(--ink-3);font-size:12.5px;}
+
+/* ── card ── */
+.card{background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-lg);box-shadow:var(--sh1);}
+.card-h{padding:13px 16px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.card-h h3{font-size:13.5px;font-weight:600;}
+.card-h .hint{font-size:11.5px;color:var(--ink-3);}
+.card-b{padding:15px 16px;}
+
+/* ── buttons ── */
+.btn{padding:8px 14px;border-radius:var(--r-sm);border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);font-size:13px;}
+.btn:hover{border-color:var(--line-s);}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.pri:hover{background:#2569d8;}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff;}
+.btn.sm{padding:5px 10px;font-size:12px;}
+.btn-row{display:flex;gap:8px;margin-top:10px;}
+.btn-row .btn{flex:1;text-align:center;}
+
+/* ── placeholder pages ── */
+.placeholder{display:grid;place-items:center;height:60vh;}
+.placeholder .box{text-align:center;max-width:420px;}
+.placeholder .big-ic{font-size:40px;opacity:.45;margin-bottom:12px;}
+.placeholder h2{font-size:16px;margin-bottom:7px;}
+.placeholder p{color:var(--ink-3);line-height:1.75;font-size:13px;}
+.tag-chip{display:inline-block;margin-top:12px;padding:4px 12px;border-radius:999px;
+  background:var(--surface-2);color:var(--ink-2);font-size:11.5px;border:1px solid var(--line);}
+
+.hidden{display:none!important;}
+
+/* ================================================================
+   图库台
+   ================================================================ */
+/* 拖拽区 */
+.drop-zone{
+  border:2px dashed var(--line-s);border-radius:var(--r-lg);
+  padding:36px 24px;text-align:center;color:var(--ink-3);font-size:13px;
+  margin-bottom:18px;transition:border-color .2s,background .2s;cursor:pointer;
+}
+.drop-zone:hover,.drop-zone.drag-over{
+  border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+.drop-zone .dz-ic{font-size:32px;margin-bottom:8px;opacity:.6;}
+.drop-zone b{color:var(--ink-2);}
+
+/* 图库网格 */
+.gal-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.gal-toolbar h3{font-size:14px;font-weight:600;}
+.gal-count{font-size:12px;color:var(--ink-3);}
+.gal-spacer{flex:1;}
+.gal-search{padding:6px 10px;border:1px solid var(--line);border-radius:var(--r-sm);
+  font-size:12.5px;width:160px;color:var(--ink);}
+.gal-search:focus{outline:none;border-color:var(--accent);}
+
+.gal-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;
+}
+.gal-empty{grid-column:1/-1;text-align:center;padding:60px 0;color:var(--ink-3);font-size:13px;}
+
+/* 图库卡片 */
+.gal-card{
+  border-radius:var(--r-md);overflow:hidden;border:2px solid transparent;
+  cursor:pointer;background:var(--surface-2);position:relative;
+  box-shadow:var(--sh1);transition:border-color .15s,transform .15s;
+}
+.gal-card:hover{border-color:var(--line-s);transform:translateY(-1px);}
+.gal-card.selected{border-color:var(--accent);}
+.gal-card .gc-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--surface-2);}
+.gal-card .gc-ph{width:100%;aspect-ratio:4/3;display:grid;place-items:center;
+  font-size:11px;color:var(--ink-3);
+  background:repeating-linear-gradient(45deg,#eef2f8,#eef2f8 6px,#e5ecf5 6px,#e5ecf5 12px);}
+.gal-card .gc-body{padding:7px 9px;}
+.gal-card .gc-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gal-card .gc-meta{font-size:11px;color:var(--ink-3);margin-top:2px;}
+.gal-card .gc-score{position:absolute;top:6px;right:6px;
+  background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:600;
+  padding:2px 7px;border-radius:999px;font-family:var(--mono);}
+.gal-card .gc-actions{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.55));
+  padding:18px 8px 7px;display:flex;gap:5px;
+  opacity:0;transition:opacity .15s;
+}
+.gal-card:hover .gc-actions{opacity:1;}
+.gac-btn{flex:1;padding:4px 0;border-radius:5px;font-size:11px;font-weight:600;
+  color:#fff;text-align:center;border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.15);cursor:pointer;}
+.gac-btn:hover{background:rgba(255,255,255,.3);}
+.gac-btn.compose{background:rgba(47,124,246,.7);border-color:var(--accent);}
+
+/* 构图调试抽屉（图库内） */
+.compose-drawer{
+  position:fixed;top:56px;right:0;bottom:0;width:520px;
+  background:var(--surface);border-left:1px solid var(--line);
+  box-shadow:-6px 0 24px rgba(26,34,51,.10);
+  z-index:100;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .25s;
+}
+.compose-drawer.open{transform:translateX(0);}
+.drawer-head{display:flex;align-items:center;gap:10px;padding:14px 16px;
+  border-bottom:1px solid var(--line);flex-shrink:0;}
+.drawer-head h3{font-size:14px;font-weight:600;flex:1;}
+.drawer-body{overflow-y:auto;flex:1;padding:16px;}
+.drawer-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;flex-shrink:0;}
+
+/* 抽屉内画布 */
+.drawer-canvas-wrap{width:100%;aspect-ratio:3/2;background:var(--surface-2);
+  border-radius:var(--r-md);overflow:hidden;position:relative;}
+#drawerCvs{width:100%;height:100%;display:block;}
+
+/* 抽屉图层 & 方案 */
+.dl-section{margin-top:14px;}
+.dl-title{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:8px;}
+.scheme-row{display:flex;gap:7px;flex-wrap:wrap;}
+.scheme-pill{padding:5px 11px;border-radius:999px;border:1.5px solid var(--line);
+  font-size:12px;cursor:pointer;color:var(--ink-2);transition:.15s;}
+.scheme-pill:hover{border-color:var(--line-s);color:var(--ink);}
+.scheme-pill.sel{color:#fff;border-color:transparent;}
+.layers-row{display:flex;gap:13px;flex-wrap:wrap;}
+.layers-row label{display:flex;align-items:center;gap:5px;font-size:12.5px;
+  color:var(--ink-2);cursor:pointer;}
+.layers-row input{accent-color:var(--accent);}
+.sl-row{margin-top:10px;}
+.sl-lab{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);margin-bottom:4px;}
+.sl-lab b{font-family:var(--mono);color:var(--ink);}
+input[type=range]{width:100%;accent-color:var(--accent);}
+
+/* ================================================================
+   构图台（只显示评分 + 提示 + 存图）
+   ================================================================ */
+.compose-page-wrap{max-width:560px;}
+
+/* 综合分大卡 */
+.score-hero{display:flex;align-items:center;gap:20px;padding:20px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--sh1);margin-bottom:16px;}
+.ring-svg{flex-shrink:0;}
+.hero-text .hero-num{font-size:36px;font-weight:700;font-family:var(--mono);line-height:1;}
+.hero-text .hero-label{font-size:12px;color:var(--ink-3);margin-top:3px;}
+.hero-text .hero-scheme{font-size:13px;color:var(--ink-2);margin-top:6px;}
+
+/* 三分项 */
+.score-bars{background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-lg);box-shadow:var(--sh1);padding:16px;margin-bottom:16px;}
+.score-bars h3{font-size:13px;font-weight:600;margin-bottom:12px;}
+.sbr{margin-bottom:11px;}
+.sbr:last-child{margin-bottom:0;}
+.sbr-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.sbr-name{color:var(--ink-2);}
+.sbr-val{font-family:var(--mono);font-weight:600;color:var(--ink);}
+.sbr-track{height:6px;background:var(--line);border-radius:3px;overflow:hidden;}
+.sbr-fill{height:100%;border-radius:3px;transition:width .5s;}
+
+/* 冲突 banner */
+.conflict-banner{background:#fff8ec;border:1px solid #ffe08a;border-radius:var(--r-sm);
+  padding:10px 13px;font-size:12.5px;color:#7a5800;margin-bottom:14px;display:none;}
+.conflict-banner.show{display:block;}
+.conflict-banner strong{display:block;margin-bottom:4px;}
+.cb-btns{display:flex;gap:7px;margin-top:7px;}
+.cb-btn{padding:4px 11px;border-radius:6px;border:1px solid #e6c44f;
+  background:#fff;color:#7a5800;font-size:11.5px;cursor:pointer;}
+.cb-btn:hover{background:#fff8ec;}
+.cb-btn.chosen{background:#ffe08a;border-color:#d4a000;}
+
+/* 提示卡 */
+.tip-card{background:var(--accent-soft);border:1px solid #c8dcfd;border-radius:var(--r-lg);
+  padding:16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px;}
+.tip-ic{font-size:22px;flex-shrink:0;margin-top:1px;}
+.tip-text{font-size:13px;color:var(--ink-2);line-height:1.7;}
+.tip-text b{color:var(--accent);}
+.tip-text .tip-link{display:inline-flex;align-items:center;gap:4px;margin-top:8px;
+  padding:6px 14px;border-radius:var(--r-sm);background:var(--accent);color:#fff;
+  font-size:12.5px;font-weight:600;cursor:pointer;border:none;}
+.tip-text .tip-link:hover{background:#2569d8;}
+
+/* 无图提示 */
+.no-img-tip{text-align:center;padding:60px 0;color:var(--ink-3);}
+.no-img-tip .ni-ic{font-size:36px;margin-bottom:10px;opacity:.4;}
+
+/* 评分权重（构图台） */
+.weight-card{background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-lg);box-shadow:var(--sh1);padding:16px;margin-bottom:16px;}
+.weight-card h3{font-size:13px;font-weight:600;margin-bottom:12px;}
+.w-row{margin-bottom:10px;}
+.w-row:last-child{margin-bottom:0;}
+.w-lab{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2);margin-bottom:4px;}
+.w-lab b{font-family:var(--mono);color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===================== 顶栏 ===================== -->
+<header class="topbar">
+  <a class="brand" href="#" onclick="return false">
+    <img class="brand-logo" id="logoImg" src="../../logo.png" alt="NeatPic"
+      onerror="this.style.display='none';document.getElementById('logoFallback').style.display='grid'">
+    <div class="brand-logo-fallback" id="logoFallback" style="display:none">N</div>
+    <span class="brand-name">NeatPic</span>
+    <span class="brand-sub">/ 羽帧集</span>
+  </a>
+
+  <div class="pipe">
+    <span class="pstage"><span class="dot on"></span>采集</span>
+    <span class="pipe-arr">›</span>
+    <span class="pstage"><span class="dot on"></span>识别</span>
+    <span class="pipe-arr">›</span>
+    <span class="pstage"><span class="dot on"></span>优选</span>
+    <span class="pipe-arr">›</span>
+    <span class="pstage"><span class="dot busy"></span>构图</span>
+  </div>
+
+  <div class="top-r">
+    <!-- 上传图片 -->
+    <button class="upload-btn" id="btnUploadFiles" title="上传图片">
+      <span>📁</span>上传图片
+    </button>
+    <!-- 上传文件夹 -->
+    <button class="upload-btn pri" id="btnUploadFolder" title="上传文件夹">
+      <span>📂</span>上传文件夹
+    </button>
+    <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+    <input type="file" id="folderInput" webkitdirectory accept="image/*" style="display:none">
+
+    <div class="dev-badge"><span class="dot on"></span>Canon · 在线</div>
+    <button class="icon-btn">⚙</button>
+  </div>
+</header>
+
+<div class="main">
+
+<!-- ===================== 侧栏 ===================== -->
+<nav class="sidebar">
+  <button class="nav-btn" data-page="capture"><span class="ic">📷</span>采集台</button>
+  <button class="nav-btn" data-page="recognize"><span class="ic">🧠</span>识别台</button>
+  <button class="nav-btn" data-page="curate"><span class="ic">✨</span>优选台</button>
+  <button class="nav-btn active" data-page="compose"><span class="ic">🎯</span>构图台</button>
+  <div class="nav-sep"></div>
+  <button class="nav-btn" data-page="gallery"><span class="ic">🖼</span>图库</button>
+  <div class="flex1"></div>
+  <div class="dev-card">
+    <div class="dct">设备状态</div>
+    <div class="dcr"><span>型号</span><span>Canon EOS</span></div>
+    <div class="dcr"><span>存储</span><span>CFexpress</span></div>
+    <div class="dcr"><span>回传</span><span style="color:var(--ok)">Both ✓</span></div>
+  </div>
+</nav>
+
+<!-- ===================== 内容区 ===================== -->
+<main class="content">
+
+  <!-- ======== 构图台 ======== -->
+  <section id="page-compose">
+    <div class="ph">
+      <h1>构图台 · Compose</h1>
+      <p>GouTu3 · A→B→C→D→E 五步流水线评分 · 去图库选图调试构图 · 满意后存图</p>
+    </div>
+
+    <div class="compose-page-wrap">
+
+      <!-- 无图时提示 -->
+      <div id="composeNoImg">
+        <div class="no-img-tip">
+          <div class="ni-ic">🖼</div>
+          <div>图库中还没有图片<br><small>先上传图片，再去图库选图开始构图</small></div>
+          <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;">
+            <button class="btn pri" id="cGoUpload">上传图片</button>
+            <button class="btn" id="cGoGallery">去图库</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 有图时显示 -->
+      <div id="composeHasImg" class="hidden">
+
+        <!-- 冲突 banner（步骤 C） -->
+        <div class="conflict-banner" id="conflictBanner">
+          <strong id="conflictTitle">⚠ 色相差异检测（步骤 C）</strong>
+          <span id="conflictDesc"></span>
+          <div class="cb-btns">
+            <button class="cb-btn" id="cbTrad">保留传统分类</button>
+            <button class="cb-btn" id="cbAI">接受 AI 分类</button>
+            <button class="cb-btn" id="cbSkip">跳过</button>
+          </div>
+        </div>
+
+        <!-- 综合分 -->
+        <div class="score-hero">
+          <svg class="ring-svg" width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="28" fill="none" stroke="var(--line)" stroke-width="7"/>
+            <circle id="ringArc" cx="36" cy="36" r="28" fill="none"
+              stroke="var(--accent)" stroke-width="7" stroke-linecap="round"
+              stroke-dasharray="175.9" stroke-dashoffset="175.9"
+              transform="rotate(-90 36 36)" style="transition:stroke-dashoffset .5s;"/>
+          </svg>
+          <div class="hero-text">
+            <div class="ring-num" id="heroNum" style="font-size:36px;font-weight:700;font-family:var(--mono);">—</div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:3px;">综合分 / 100</div>
+            <div style="font-size:13px;color:var(--ink-2);margin-top:6px;" id="heroScheme">—</div>
+            <div style="font-size:11.5px;color:var(--ink-3);margin-top:3px;" id="heroImg">—</div>
+          </div>
+        </div>
+
+        <!-- 三分项 -->
+        <div class="score-bars">
+          <h3>三维度评分（GouTu3 compute_score）</h3>
+          <div class="sbr">
+            <div class="sbr-top"><span class="sbr-name">① 锚点位置（九宫格命中 ×0.3）</span><span class="sbr-val" id="scPos">—</span></div>
+            <div class="sbr-track"><div class="sbr-fill" id="scPosBar" style="width:0;background:var(--c-thirds)"></div></div>
+          </div>
+          <div class="sbr">
+            <div class="sbr-top"><span class="sbr-name">② 色彩比例（0.6/0.3/0.1 ×0.4）</span><span class="sbr-val" id="scRatio">—</span></div>
+            <div class="sbr-track"><div class="sbr-fill" id="scRatioBar" style="width:0;background:var(--c-golden)"></div></div>
+          </div>
+          <div class="sbr">
+            <div class="sbr-top"><span class="sbr-name">③ 同类色相一致性（×0.3）</span><span class="sbr-val" id="scCons">—</span></div>
+            <div class="sbr-track"><div class="sbr-fill" id="scConsBar" style="width:0;background:var(--c-sym)"></div></div>
+          </div>
+        </div>
+
+        <!-- 权重 -->
+        <div class="weight-card">
+          <h3>权重调节（实时重算）</h3>
+          <div class="w-row">
+            <div class="w-lab"><span>锚点位置</span><b id="wPosD">0.30</b></div>
+            <input type="range" id="wPos" min="0" max="100" value="30">
+          </div>
+          <div class="w-row">
+            <div class="w-lab"><span>色彩比例</span><b id="wRatioD">0.40</b></div>
+            <input type="range" id="wRatio" min="0" max="100" value="40">
+          </div>
+          <div class="w-row">
+            <div class="w-lab"><span>色相一致性</span><b id="wConsD">0.30</b></div>
+            <input type="range" id="wCons" min="0" max="100" value="30">
+          </div>
+        </div>
+
+        <!-- 提示 -->
+        <div class="tip-card">
+          <div class="tip-ic">💡</div>
+          <div class="tip-text">
+            想调整构图方案、切换背景图、调整主体占比？<br>
+            <b>去图库</b>选图后点击「调试构图」，右侧抽屉即可实时预览四种方案并调参。
+            <br>
+            <button class="tip-link" id="tipGoGallery">🖼 去图库调试构图</button>
+          </div>
+        </div>
+
+        <!-- 存图 -->
+        <div class="btn-row" style="max-width:340px;">
+          <button class="btn ok" id="btnSaveImg">💾 存图（导出当前构图 PNG）</button>
+          <button class="btn" id="btnSaveJson">导出 info.json</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== 图库台 ======== -->
+  <section id="page-gallery" class="hidden">
+    <div class="ph">
+      <h1>图库 · Gallery</h1>
+      <p>管理所有上传的图片 · 单击选图 · 点「调试构图」打开构图抽屉</p>
+    </div>
+
+    <!-- 拖拽上传区 -->
+    <div class="drop-zone" id="dropZone">
+      <div class="dz-ic">📥</div>
+      <div><b>拖拽图片或文件夹到这里</b>，或点击上方按钮上传</div>
+      <div style="margin-top:5px;font-size:12px;">支持 JPG / PNG / WEBP · 可批量</div>
+    </div>
+
+    <!-- 工具栏 -->
+    <div class="gal-toolbar">
+      <h3>全部图片</h3>
+      <span class="gal-count" id="galCount">0 张</span>
+      <div class="gal-spacer"></div>
+      <input class="gal-search" id="galSearch" type="search" placeholder="搜索文件名…">
+      <button class="btn sm" id="galClearAll">清空图库</button>
+    </div>
+
+    <!-- 网格 -->
+    <div class="gal-grid" id="galGrid">
+      <div class="gal-empty" id="galEmpty">还没有图片，点击上方「上传图片」或拖拽到上面添加</div>
+    </div>
+  </section>
+
+  <!-- ======== 占位台 ======== -->
+  <section id="page-capture" class="hidden">
+    <div class="placeholder"><div class="box">
+      <div class="big-ic">📷</div><h2>采集台 · Capture</h2>
+      <p>对接 <code>camctrl.cpp</code>（佳能 EDSDK）：设备会话、预录开关、实时检测、自动触发与照片回传队列。</p>
+      <span class="tag-chip">下一阶段实现</span>
+    </div></div>
+  </section>
+  <section id="page-recognize" class="hidden">
+    <div class="placeholder"><div class="box">
+      <div class="big-ic">🧠</div><h2>识别台 · Recognize</h2>
+      <p>对接 ResNet50（<code>bird_classification_v2.ipynb</code>）：Top-3 鸟种置信度、一键建库。</p>
+      <span class="tag-chip">下一阶段实现</span>
+    </div></div>
+  </section>
+  <section id="page-curate" class="hidden">
+    <div class="placeholder"><div class="box">
+      <div class="big-ic">✨</div><h2>优选台 · Curate</h2>
+      <p>美学评分可视化、权重实时重算、批量优选。</p>
+      <span class="tag-chip">下一阶段实现</span>
+    </div></div>
+  </section>
+
+</main>
+</div>
+</div>
+
+<!-- ===================== 构图调试抽屉 ===================== -->
+<div class="compose-drawer" id="composeDrawer">
+  <div class="drawer-head">
+    <h3 id="drawerTitle">调试构图</h3>
+    <button class="btn sm" id="drawerClose">✕ 关闭</button>
+  </div>
+  <div class="drawer-body">
+    <!-- 画布 -->
+    <div class="drawer-canvas-wrap">
+      <canvas id="drawerCvs" width="900" height="600"></canvas>
+    </div>
+
+    <!-- 方案 -->
+    <div class="dl-section">
+      <div class="dl-title">构图方案</div>
+      <div class="scheme-row" id="drawerSchemes"></div>
+    </div>
+
+    <!-- 图层 -->
+    <div class="dl-section">
+      <div class="dl-title">图层显示</div>
+      <div class="layers-row">
+        <label><input type="checkbox" id="dlyLines" checked>构图线</label>
+        <label><input type="checkbox" id="dlyAnchor" checked>锚点</label>
+        <label><input type="checkbox" id="dlyBlocks">色块</label>
+        <label><input type="checkbox" id="dlyGrid">留白</label>
+      </div>
+    </div>
+
+    <!-- 主体占比 -->
+    <div class="dl-section">
+      <div class="dl-title">主体目标占比</div>
+      <div class="sl-row">
+        <div class="sl-lab"><span>占比</span><b id="dRatioD">1/5</b></div>
+        <input type="range" id="dRatio" min="8" max="35" value="20">
+      </div>
+    </div>
+
+    <!-- 评分小展示 -->
+    <div class="dl-section">
+      <div class="dl-title">当前评分</div>
+      <div id="drawerScoreKV" style="font-size:12px;color:var(--ink-2);font-family:var(--mono);line-height:2;"></div>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn pri" id="drawerSave" style="flex:1">💾 存图（导出 PNG）</button>
+    <button class="btn" id="drawerSaveJson">导出 info.json</button>
+    <button class="btn ok" id="drawerToCompose">→ 同步到构图台</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   GouTu3 算法（严格对齐 notebook，不新增）
+   A 传统色块 → B mock AI → C 色相差冲突 → D finalize → E evaluate
+   ============================================================ */
+const PHI = 1.618;
+
+function classifyHue(h){
+  const d=h*2;
+  if(d<15||d>=345) return "Red";
+  if(d<45)  return "Orange/Yellow";
+  if(d<165) return "Green";
+  if(d<255) return "Blue";
+  return "Purple";
+}
+
+/* A: 像素级 HSV 色块统计 */
+function traditionalBlocks(imgEl, W, H){
+  const off=document.createElement('canvas'); off.width=W; off.height=H;
+  const oc=off.getContext('2d'); oc.drawImage(imgEl,0,0,W,H);
+  const data=oc.getImageData(0,0,W,H).data;
+
+  function rgbToHsv(r,g,b){
+    r/=255;g/=255;b/=255;
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+    let h=0,s=mx===0?0:d/mx,v=mx;
+    if(d>0){
+      if(mx===r)      h=((g-b)/d)%6;
+      else if(mx===g) h=(b-r)/d+2;
+      else            h=(r-g)/d+4;
+      h=Math.round(h*30); if(h<0)h+=180;
+    }
+    return [h,Math.round(s*255),Math.round(v*255)];
+  }
+
+  const groups={};
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+    const i=(y*W+x)*4;
+    const [h,s,v]=rgbToHsv(data[i],data[i+1],data[i+2]);
+    if(s<30) continue;
+    const cat=classifyHue(h);
+    if(!groups[cat]) groups[cat]={cat,hSum:0,sSum:0,vSum:0,cnt:0,
+      minX:W,maxX:0,minY:H,maxY:0};
+    const g=groups[cat];
+    g.hSum+=h;g.sSum+=s;g.vSum+=v;g.cnt++;
+    if(x<g.minX)g.minX=x;if(x>g.maxX)g.maxX=x;
+    if(y<g.minY)g.minY=y;if(y>g.maxY)g.maxY=y;
+  }
+
+  const blocks=[];
+  Object.values(groups).forEach(g=>{
+    if(g.cnt<100) return;
+    const n=g.cnt;
+    const mh=g.hSum/n,ms=g.sSum/n,mv=g.vSum/n;
+    const cx=(g.minX+g.maxX)/2,cy=(g.minY+g.maxY)/2;
+    blocks.push({
+      color:g.cat, hue:mh, sat:ms/255, val:mv/255, area:n,
+      center:[cx/W,cy/H],
+      bbox:[g.minX/W,g.minY/H,(g.maxX-g.minX)/W,(g.maxY-g.minY)/H],
+    });
+  });
+  return blocks;
+}
+
+/* B: mock AI regions */
+function mockAiRegions(blocks){
+  if(!blocks.length) return [];
+  const sorted=[...blocks].sort((a,b)=>(b.sat-a.sat)*0.6+(b.area-a.area)/1e5*0.4);
+  const bird=sorted[0];
+  return [{class_name:'bird',hsv_mean:[bird.hue,bird.sat*255,bird.val*255],area:bird.area}];
+}
+
+/* C: hue_difference */
+function hueDiff(h1,h2){ const d=Math.abs(h1-h2); return Math.min(d,180-d); }
+function detectConflicts(blocks,aiR,thr=10){
+  const out=[];
+  blocks.forEach((b,ti)=>{
+    aiR.forEach(ar=>{
+      const d=hueDiff(b.hue,ar.hsv_mean[0]);
+      if(d>thr) out.push({ti,blockColor:b.color,aiClass:ar.class_name,diff:d.toFixed(1)});
+    });
+  });
+  return out;
+}
+
+/* D: finalize（透传） */
+function finalizeBlocks(b){ return b; }
+
+/* E: compute_score */
+function computeScore(blocks, weights){
+  if(!blocks.length) return {pos:0,ratio:0,cons:0,total:0,anchors:[]};
+  const sorted=[...blocks].sort((a,b)=>{
+    if(Math.abs(b.sat-a.sat)>0.01) return b.sat-a.sat;
+    if(Math.abs(a.val-b.val)>0.01) return a.val-b.val;
+    return b.area-a.area;
+  });
+  const anchors=sorted.slice(0,3);
+  const cross=[[1/3,1/3],[2/3,1/3],[1/3,2/3],[2/3,2/3]];
+  const thr=Math.hypot(1,1)*0.1;
+  let good=0;
+  anchors.forEach(b=>{
+    const [cx,cy]=b.center;
+    for(const [px,py] of cross){
+      if(Math.hypot(cx-px,cy-py)<=thr){good++;break;}
+    }
+  });
+  const posScore=(good/3)*100;
+
+  const colorArea={};
+  blocks.forEach(b=>{colorArea[b.color]=(colorArea[b.color]||0)+b.area;});
+  const top3=Object.entries(colorArea).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  let ratioScore=0;
+  if(top3.length>=3){
+    const tot=top3.reduce((s,x)=>s+x[1],0);
+    const err=top3.map((x,i)=>Math.abs(x[1]/tot-[0.6,0.3,0.1][i])).reduce((s,v)=>s+v,0);
+    ratioScore=Math.max(0,100-err*100);
+  }
+
+  const colorHues={};
+  blocks.forEach(b=>{ if(!colorHues[b.color])colorHues[b.color]=[]; colorHues[b.color].push(b.hue); });
+  function hueStd(hs){
+    if(hs.length<2) return 0;
+    const angs=hs.map(h=>h*(Math.PI/90));
+    const re=angs.reduce((s,a)=>s+Math.cos(a),0)/angs.length;
+    const im=angs.reduce((s,a)=>s+Math.sin(a),0)/angs.length;
+    const avg=Math.atan2(im,re);
+    const diffs=angs.map(a=>{let d=Math.abs(a-avg);if(d>Math.PI)d=2*Math.PI-d;return d;});
+    return Math.sqrt(diffs.reduce((s,d)=>s+d*d,0)/diffs.length)*(180/Math.PI);
+  }
+  const consArr=Object.values(colorHues).map(hs=>100*(1-hueStd(hs)/180));
+  const consScore=consArr.length?consArr.reduce((s,x)=>s+x,0)/consArr.length:0;
+
+  const w=weights||{pos:0.3,ratio:0.4,cons:0.3};
+  return {
+    pos:Math.round(posScore), ratio:Math.round(ratioScore),
+    cons:Math.round(consScore), anchors,
+    total:Math.round(w.pos*posScore+w.ratio*ratioScore+w.cons*consScore),
+  };
+}
+
+/* 构图方案位置 */
+function buildSchemes(){
+  const cx=0.5,cy=0.5,diagN=Math.hypot(0.5,0.5);
+  const tPts=[[1/3,1/3],[2/3,1/3],[1/3,2/3],[2/3,2/3]];
+  let tB=tPts[0],tSc=-1;
+  tPts.forEach(p=>{const s=Math.hypot(p[0]-cx,p[1]-cy)/diagN;if(s>tSc){tSc=s;tB=p;}});
+  const gx=1/PHI,gy=1/PHI;
+  const gPts=[[gx,gy],[1-gx,gy],[gx,1-gy],[1-gx,1-gy]];
+  let gB=gPts[0],gSc=-1;
+  gPts.forEach(p=>{const mx=Math.abs(p[0]-cx)/.5,my=Math.abs(p[1]-cy)/.5;
+    const s=(mx+my)/2;if(s>gSc){gSc=s;gB=p;}});
+  const sOpts=[{p:[.5,1/3],t:"vertical",d:"垂直对称"},{p:[1/3,.5],t:"horizontal",d:"水平对称"},{p:[.5,.5],t:"central",d:"中心对称"}];
+  let sB=sOpts[0],sSc=-1;
+  sOpts.forEach(o=>{let s=1-Math.hypot(o.p[0]-cx,o.p[1]-cy)/diagN;if(o.t==="central")s*=1.2;if(s>sSc){sSc=s;sB=o;}});
+  const rs=[0.3,0.4,0.6,0.7];let dB=[0.3,0.3],dSc=-1;
+  rs.forEach(r=>{const x=r,y=r;const e=Math.min(x,1-x,y,1-y)/.5;const dy=Math.abs(x-y);
+    const s=e*.6+dy*.4;if(s>dSc){dSc=s;dB=[x,y];}});
+  const C=(v)=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  return {
+    thirds:  {name:"三分法",  color:C('--c-thirds'), score:tSc, pos:tB},
+    golden:  {name:"黄金分割",color:C('--c-golden'), score:gSc, pos:gB},
+    symmetry:{name:"对称",    color:C('--c-sym'),    score:sSc, pos:sB.p, sym:sB.t},
+    diagonal:{name:"对角线",  color:C('--c-diag'),   score:dSc, pos:dB},
+  };
+}
+
+/* ============================================================
+   图库状态
+   ============================================================ */
+// 每张图: {id, name, dataURL, el(Image), blocks, score, scheme, ratio}
+const GALLERY = [];
+let galNextId = 1;
+
+function addImages(files){
+  const proms=[];
+  for(const f of files){
+    if(!f.type.startsWith('image/')) continue;
+    proms.push(new Promise(res=>{
+      const reader=new FileReader();
+      reader.onload=e=>{
+        const dataURL=e.target.result;
+        const img=new Image();
+        img.onload=()=>{
+          const id='img'+(galNextId++);
+          const blocks=traditionalBlocks(img,img.naturalWidth,img.naturalHeight);
+          const aiR=mockAiRegions(blocks);
+          const conflicts=detectConflicts(blocks,aiR,10);
+          const final=finalizeBlocks(blocks);
+          const score=computeScore(final,{pos:.3,ratio:.4,cons:.3});
+          GALLERY.push({id,name:f.name,dataURL,el:img,blocks,conflicts,
+            conflictChoice:{},conflictIdx:0,score,scheme:'thirds',ratio:20});
+          res();
+        };
+        img.src=dataURL;
+      };
+      reader.readAsDataURL(f);
+    }));
+  }
+  return Promise.all(proms);
+}
+
+/* ============================================================
+   图库渲染
+   ============================================================ */
+function renderGallery(filter){
+  const grid=document.getElementById('galGrid');
+  const empty=document.getElementById('galEmpty');
+  const q=(filter||'').toLowerCase();
+  const list=q?GALLERY.filter(m=>m.name.toLowerCase().includes(q)):GALLERY;
+  document.getElementById('galCount').textContent=list.length+' 张';
+  if(!list.length){
+    empty.style.display=''; grid.innerHTML=''; grid.appendChild(empty); return;
+  }
+  empty.style.display='none';
+  grid.innerHTML=list.map(m=>`
+    <div class="gal-card" data-id="${m.id}">
+      <img class="gc-img" src="${m.dataURL}" alt="${m.name}" loading="lazy">
+      <div class="gc-body">
+        <div class="gc-name" title="${m.name}">${m.name}</div>
+        <div class="gc-meta">${m.score?m.score.total+' 分':'—'}</div>
+      </div>
+      <span class="gc-score">${m.score?m.score.total:'—'}</span>
+      <div class="gc-actions">
+        <div class="gac-btn compose" data-id="${m.id}">🎯 调试构图</div>
+        <div class="gac-btn" data-del="${m.id}">🗑</div>
+      </div>
+    </div>
+  `).join('');
+
+  // 绑定点击
+  grid.querySelectorAll('.gac-btn.compose').forEach(btn=>{
+    btn.onclick=e=>{e.stopPropagation();openDrawer(btn.dataset.id);};
+  });
+  grid.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.onclick=e=>{e.stopPropagation();deleteImg(btn.dataset.del);};
+  });
+}
+
+function deleteImg(id){
+  const idx=GALLERY.findIndex(m=>m.id===id);
+  if(idx>=0){GALLERY.splice(idx,1);renderGallery();}
+  if(S.currentId===id){S.currentId=null;syncComposePage();}
+}
+
+/* ============================================================
+   构图抽屉
+   ============================================================ */
+const DCV=document.getElementById('drawerCvs');
+const DCTX=DCV.getContext('2d');
+const DW=DCV.width,DH=DCV.height;
+
+const DS={
+  imgId:null, scheme:'thirds', ratio:20,
+  layers:{lines:true,anchor:true,blocks:false,grid:false},
+};
+
+function openDrawer(id){
+  const m=GALLERY.find(x=>x.id===id);
+  if(!m) return;
+  DS.imgId=id; DS.scheme=m.scheme||'thirds'; DS.ratio=m.ratio||20;
+  document.getElementById('drawerTitle').textContent='调试构图 · '+m.name;
+  document.getElementById('dRatio').value=DS.ratio;
+  document.getElementById('dRatioD').textContent='1/'+(100/DS.ratio).toFixed(1);
+  buildDrawerSchemes();
+  document.getElementById('composeDrawer').classList.add('open');
+  drawerRender();
+}
+function closeDrawer(){ document.getElementById('composeDrawer').classList.remove('open'); }
+
+function buildDrawerSchemes(){
+  const schemes=buildSchemes();
+  const order=['thirds','golden','symmetry','diagonal'];
+  document.getElementById('drawerSchemes').innerHTML=order.map(k=>{
+    const s=schemes[k];
+    return `<span class="scheme-pill${k===DS.scheme?' sel':''}"
+      data-k="${k}" style="${k===DS.scheme?'background:'+s.color+';':''}"
+    >${s.name} ${s.score.toFixed(2)}</span>`;
+  }).join('');
+  document.querySelectorAll('.scheme-pill').forEach(el=>{
+    el.onclick=()=>{DS.scheme=el.dataset.k;buildDrawerSchemes();drawerRender();};
+  });
+}
+
+function drawerRender(){
+  const m=GALLERY.find(x=>x.id===DS.imgId);
+  if(!m) return;
+  const schemes=buildSchemes();
+  const sc=schemes[DS.scheme];
+  DCTX.clearRect(0,0,DW,DH);
+  drawCoverCtx(DCTX,m.el,DW,DH);
+  if(DS.layers.blocks) drawBlocksCtx(DCTX,m.blocks,DW,DH);
+  if(DS.layers.bird||true){
+    const [px,py]=sc.pos;
+    const tArea=(DS.ratio/100)*DW*DH;
+    const ar=m.el.naturalWidth/m.el.naturalHeight;
+    const bh=Math.sqrt(tArea/ar),bw=bh*ar;
+    const x=px*DW-bw/2,y=py*DH-bh/2;
+    DCTX.save();
+    DCTX.shadowColor='rgba(0,0,0,.22)';DCTX.shadowBlur=16;DCTX.shadowOffsetY=5;
+    roundClipCtx(DCTX,m.el,x,y,bw,bh,10,DW,DH);
+    DCTX.restore();
+  }
+  if(DS.layers.grid){
+    const mg=Math.min(DW,DH)*.1;
+    DCTX.strokeStyle='rgba(255,255,255,.28)';DCTX.lineWidth=1;
+    DCTX.strokeRect(mg,mg,DW-2*mg,DH-2*mg);
+  }
+  if(DS.layers.lines) drawLinesCtx(DCTX,sc,DS.scheme,DW,DH);
+  if(DS.layers.anchor && m.score && m.score.anchors){
+    m.score.anchors.forEach((b,i)=>{
+      const [cx,cy]=b.center;
+      DCTX.fillStyle=sc.color;
+      DCTX.beginPath();DCTX.arc(cx*DW,cy*DH,i===0?8:6,0,7);DCTX.fill();
+      DCTX.strokeStyle='#fff';DCTX.lineWidth=2;DCTX.stroke();
+    });
+  }
+  // 评分 kv
+  const sc2=m.score;
+  document.getElementById('drawerScoreKV').innerHTML=sc2?
+    `综合 <b>${sc2.total}</b> · 锚点 <b>${sc2.pos}</b> · 比例 <b>${sc2.ratio}</b> · 一致性 <b>${sc2.cons}</b><br>方案 <b>${schemes[DS.scheme].name}</b> (${schemes[DS.scheme].score.toFixed(2)})`:
+    '—';
+}
+
+/* ============================================================
+   Canvas 工具函数
+   ============================================================ */
+function drawCoverCtx(c,img,W,H){
+  const ar=img.naturalWidth/img.naturalHeight,cr=W/H;
+  let dw,dh,dx,dy;
+  if(ar>cr){dh=H;dw=H*ar;dx=(W-dw)/2;dy=0;}
+  else{dw=W;dh=W/ar;dx=0;dy=(H-dh)/2;}
+  c.drawImage(img,dx,dy,dw,dh);
+}
+function roundClipCtx(c,img,x,y,w,h,r,W,H){
+  c.save();
+  c.beginPath();
+  c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();c.clip();
+  const ar=img.naturalWidth/img.naturalHeight,tr=w/h;
+  let dw,dh,dx,dy;
+  if(ar>tr){dh=h;dw=h*ar;dx=x-(dw-w)/2;dy=y;}
+  else{dw=w;dh=w/ar;dx=x;dy=y-(dh-h)/2;}
+  c.drawImage(img,dx,dy,dw,dh);c.restore();
+}
+const BLOCK_CLR={"Red":"rgba(255,77,77,.32)","Orange/Yellow":"rgba(255,165,0,.32)",
+  "Green":"rgba(60,179,113,.32)","Blue":"rgba(65,105,225,.32)","Purple":"rgba(147,112,219,.32)"};
+function drawBlocksCtx(c,blocks,W,H){
+  blocks.forEach(b=>{
+    const [bx,by,bw,bh]=b.bbox;
+    c.fillStyle=BLOCK_CLR[b.color]||'rgba(200,200,200,.25)';
+    c.fillRect(bx*W,by*H,bw*W,bh*H);
+  });
+}
+function drawLinesCtx(c,sc,scheme,W,H){
+  c.globalAlpha=.85;c.strokeStyle=sc.color;c.fillStyle=sc.color;c.lineWidth=2;
+  function ln(x1,y1,x2,y2,lw){c.save();if(lw)c.lineWidth=lw;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();c.restore();}
+  function dt(x,y,r){c.beginPath();c.arc(x,y,r,0,7);c.fill();c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=1.5;c.stroke();}
+  if(scheme==='thirds'){
+    [1/3,2/3].forEach(x=>ln(x*W,0,x*W,H));
+    [1/3,2/3].forEach(y=>ln(0,y*H,W,y*H));
+    [[1/3,1/3],[2/3,1/3],[1/3,2/3],[2/3,2/3]].forEach(p=>dt(p[0]*W,p[1]*H,4));
+  } else if(scheme==='golden'){
+    const gx=W/PHI,gy=H/PHI;
+    [gx,W-gx].forEach(x=>ln(x,0,x,H));[gy,H-gy].forEach(y=>ln(0,y,W,y));
+    [[gx,gy],[W-gx,gy],[gx,H-gy],[W-gx,H-gy]].forEach(p=>dt(p[0],p[1],5));
+  } else if(scheme==='symmetry'){
+    if(sc.sym==='vertical')ln(W/2,0,W/2,H,3);
+    else if(sc.sym==='horizontal')ln(0,H/2,W,H/2,3);
+    else{ln(W/2,0,W/2,H);ln(0,H/2,W,H/2);}
+  } else if(scheme==='diagonal'){
+    ln(0,0,W,H);ln(W,0,0,H);dt(sc.pos[0]*W,sc.pos[1]*H,6);
+  }
+  c.globalAlpha=1;
+}
+
+/* ============================================================
+   构图台主状态
+   ============================================================ */
+const S={
+  currentId:null,
+  weights:{pos:.3,ratio:.4,cons:.3},
+  conflictIdx:0,
+};
+
+function syncComposePage(){
+  const m=S.currentId?GALLERY.find(x=>x.id===S.currentId):GALLERY[0];
+  if(!m || !GALLERY.length){
+    document.getElementById('composeNoImg').style.display='';
+    document.getElementById('composeHasImg').classList.add('hidden');
+    return;
+  }
+  S.currentId=m.id;
+  document.getElementById('composeNoImg').style.display='none';
+  document.getElementById('composeHasImg').classList.remove('hidden');
+  // 重算 score（用当前权重）
+  const sc=computeScore(finalizeBlocks(m.blocks),S.weights);
+  m.score=sc;
+  // 更新 UI
+  const circ=2*Math.PI*28;
+  document.getElementById('ringArc').style.strokeDashoffset=circ*(1-sc.total/100);
+  document.getElementById('heroNum').textContent=sc.total;
+  const schemes=buildSchemes();
+  document.getElementById('heroScheme').textContent='方案：'+(schemes[m.scheme||'thirds'].name)+' · 分数 '+schemes[m.scheme||'thirds'].score.toFixed(2);
+  document.getElementById('heroImg').textContent='图片：'+m.name;
+  function setBar(nid,bid,val){
+    document.getElementById(nid).textContent=val;
+    document.getElementById(bid).style.width=val+'%';
+  }
+  setBar('scPos','scPosBar',sc.pos);
+  setBar('scRatio','scRatioBar',sc.ratio);
+  setBar('scCons','scConsBar',sc.cons);
+  // 冲突
+  updateConflictBanner(m);
+}
+
+function updateConflictBanner(m){
+  const banner=document.getElementById('conflictBanner');
+  if(!m||!m.conflicts||!m.conflicts.length){banner.classList.remove('show');return;}
+  const cf=m.conflicts[m.conflictIdx||0];
+  if(!cf){banner.classList.remove('show');return;}
+  banner.classList.add('show');
+  document.getElementById('conflictTitle').textContent=
+    `⚠ 色相差异 ${cf.diff}° > 10° — 步骤 C（${(m.conflictIdx||0)+1}/${m.conflicts.length}）`;
+  document.getElementById('conflictDesc').textContent=
+    `区域 #${cf.ti}：传统「${cf.blockColor}」vs AI「${cf.aiClass}」`;
+  document.getElementById('cbTrad').className='cb-btn'+(m.conflictChoice[cf.ti]==='t'?' chosen':'');
+  document.getElementById('cbAI').className='cb-btn'+(m.conflictChoice[cf.ti]==='a'?' chosen':'');
+}
+
+/* ============================================================
+   存图
+   ============================================================ */
+function exportPng(cvs, filename){
+  const a=document.createElement('a');
+  a.download=filename||'neatpic.png';
+  a.href=cvs.toDataURL('image/png');a.click();
+}
+function exportJson(data, filename){
+  const a=document.createElement('a');
+  a.download=filename||'info.json';
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.click();
+}
+
+/* ============================================================
+   权重同步
+   ============================================================ */
+function syncWeights(){
+  const p=+document.getElementById('wPos').value;
+  const r=+document.getElementById('wRatio').value;
+  const c=+document.getElementById('wCons').value;
+  const sum=p+r+c||1;
+  S.weights={pos:p/sum,ratio:r/sum,cons:c/sum};
+  document.getElementById('wPosD').textContent=S.weights.pos.toFixed(2);
+  document.getElementById('wRatioD').textContent=S.weights.ratio.toFixed(2);
+  document.getElementById('wConsD').textContent=S.weights.cons.toFixed(2);
+  syncComposePage();
+}
+
+/* ============================================================
+   导航
+   ============================================================ */
+const PAGES=['compose','gallery','capture','recognize','curate'];
+function goPage(p){
+  PAGES.forEach(pg=>document.getElementById('page-'+pg).classList.toggle('hidden',pg!==p));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===p));
+  if(p==='compose') syncComposePage();
+  if(p==='gallery') renderGallery(document.getElementById('galSearch').value);
+}
+
+/* ============================================================
+   上传处理
+   ============================================================ */
+async function handleFiles(files){
+  await addImages(files);
+  renderGallery();
+  // 如在构图台，自动同步
+  if(!document.getElementById('page-compose').classList.contains('hidden')) syncComposePage();
+}
+
+/* ============================================================
+   绑定所有事件
+   ============================================================ */
+function bindAll(){
+  // 导航
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    btn.onclick=()=>goPage(btn.dataset.page);
+  });
+
+  // 上传
+  document.getElementById('btnUploadFiles').onclick=()=>document.getElementById('fileInput').click();
+  document.getElementById('btnUploadFolder').onclick=()=>document.getElementById('folderInput').click();
+  document.getElementById('fileInput').onchange=e=>{ handleFiles(e.target.files); e.target.value=''; };
+  document.getElementById('folderInput').onchange=e=>{ handleFiles(e.target.files); e.target.value=''; };
+
+  // 拖拽
+  const dz=document.getElementById('dropZone');
+  dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag-over');};
+  dz.ondragleave=()=>dz.classList.remove('drag-over');
+  dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag-over');handleFiles(e.dataTransfer.files);};
+  dz.onclick=()=>document.getElementById('fileInput').click();
+
+  // 搜索
+  document.getElementById('galSearch').oninput=e=>renderGallery(e.target.value);
+
+  // 清空
+  document.getElementById('galClearAll').onclick=()=>{
+    if(confirm('确认清空图库？')) { GALLERY.length=0; S.currentId=null; renderGallery(); syncComposePage(); }
+  };
+
+  // 构图台快捷按钮
+  document.getElementById('cGoUpload').onclick=()=>document.getElementById('fileInput').click();
+  document.getElementById('cGoGallery').onclick=()=>goPage('gallery');
+  document.getElementById('tipGoGallery').onclick=()=>goPage('gallery');
+
+  // 冲突按钮
+  function nextConflict(choice){
+    const m=S.currentId?GALLERY.find(x=>x.id===S.currentId):null;
+    if(!m) return;
+    const cf=m.conflicts[m.conflictIdx||0];
+    if(cf && choice){
+      m.conflictChoice[cf.ti]=choice;
+      if(choice==='a') m.conflictChoice[cf.ti+'_cls']=cf.aiClass;
+    }
+    m.conflictIdx=(m.conflictIdx||0)+1;
+    syncComposePage();
+  }
+  document.getElementById('cbTrad').onclick=()=>nextConflict('t');
+  document.getElementById('cbAI').onclick=()=>nextConflict('a');
+  document.getElementById('cbSkip').onclick=()=>nextConflict(null);
+
+  // 权重
+  ['wPos','wRatio','wCons'].forEach(id=>{ document.getElementById(id).oninput=syncWeights; });
+
+  // 存图（构图台）
+  document.getElementById('btnSaveImg').onclick=()=>{
+    const m=S.currentId?GALLERY.find(x=>x.id===S.currentId):GALLERY[0];
+    if(!m) return;
+    // 在 offscreen canvas 上重新合成一帧
+    const cv2=document.createElement('canvas'); cv2.width=900; cv2.height=600;
+    const c2=cv2.getContext('2d');
+    const schemes=buildSchemes(); const sc=schemes[m.scheme||'thirds'];
+    drawCoverCtx(c2,m.el,900,600);
+    const [px,py]=sc.pos;
+    const tA=(m.ratio||20)/100*900*600;
+    const ar=m.el.naturalWidth/m.el.naturalHeight;
+    const bh=Math.sqrt(tA/ar),bw=bh*ar;
+    roundClipCtx(c2,m.el,px*900-bw/2,py*600-bh/2,bw,bh,10,900,600);
+    drawLinesCtx(c2,sc,m.scheme||'thirds',900,600);
+    exportPng(cv2,'neatpic_'+m.name);
+  };
+  document.getElementById('btnSaveJson').onclick=()=>{
+    const m=S.currentId?GALLERY.find(x=>x.id===S.currentId):GALLERY[0];
+    if(!m) return;
+    const schemes=buildSchemes();const sc=schemes[m.scheme||'thirds'];
+    exportJson({composition_method:sc.name,position:sc.pos,
+      scheme_score:+sc.score.toFixed(4),aesthetic_score:m.score,
+      weights:S.weights,image:m.name},'neatpic_info.json');
+  };
+
+  // 抽屉
+  document.getElementById('drawerClose').onclick=closeDrawer;
+  document.getElementById('dRatio').oninput=e=>{
+    DS.ratio=+e.target.value;
+    document.getElementById('dRatioD').textContent='1/'+(100/DS.ratio).toFixed(1);
+    drawerRender();
+  };
+  // 图层
+  Object.entries({dlyLines:'lines',dlyAnchor:'anchor',dlyBlocks:'blocks',dlyGrid:'grid'}).forEach(([id,k])=>{
+    document.getElementById(id).onchange=e=>{DS.layers[k]=e.target.checked;drawerRender();};
+  });
+
+  // 抽屉存图
+  document.getElementById('drawerSave').onclick=()=>exportPng(DCV,'neatpic_drawer.png');
+  document.getElementById('drawerSaveJson').onclick=()=>{
+    const m=GALLERY.find(x=>x.id===DS.imgId);
+    const schemes=buildSchemes();const sc=schemes[DS.scheme];
+    exportJson({composition_method:sc.name,position:sc.pos,
+      scheme_score:+sc.score.toFixed(4),aesthetic_score:m&&m.score,
+      target_ratio:'1/'+(100/DS.ratio).toFixed(1),image:m&&m.name},'neatpic_drawer_info.json');
+  };
+  // 同步到构图台
+  document.getElementById('drawerToCompose').onclick=()=>{
+    const m=GALLERY.find(x=>x.id===DS.imgId);
+    if(m){m.scheme=DS.scheme;m.ratio=DS.ratio;S.currentId=m.id;}
+    closeDrawer();
+    goPage('compose');
+  };
+}
+
+/* ============================================================
+   启动
+   ============================================================ */
+(function init(){
+  bindAll();
+  goPage('compose');
+  syncWeights();
+})();
+</script>
+</body>
+</html>
