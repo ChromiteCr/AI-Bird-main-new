@@ -270,7 +270,29 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 /* ================================================================
    构图台（只显示评分 + 提示 + 存图）
    ================================================================ */
-.compose-page-wrap{max-width:560px;}
+.compose-page-wrap{max-width:1120px;}
+.compose-main{max-width:560px;min-width:0;}
+#composeHasImg{display:grid;grid-template-columns:560px 1fr;gap:24px;align-items:start;}
+@media (max-width:960px){ #composeHasImg{grid-template-columns:1fr;} }
+
+.compose-side{display:flex;flex-direction:column;gap:16px;min-width:0;}
+.side-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--sh1);padding:16px;}
+.side-card .dl-title{margin-bottom:12px;}
+.typical-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-md);display:block;margin-bottom:10px;}
+.typical-meta .typical-name{font-size:13.5px;font-weight:600;}
+.typical-meta .typical-sub{font-size:12px;color:var(--ink-3);margin-top:3px;}
+.typical-meta .typical-match{font-size:12.5px;color:var(--accent-2);margin-top:6px;font-weight:600;}
+.pref-list{max-height:440px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin:-4px;padding:4px;}
+.pref-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--r-sm);
+  cursor:pointer;transition:background .15s,border-color .15s;border:1px solid transparent;}
+.pref-row:hover{background:var(--surface-2);}
+.pref-row.active{background:var(--accent-soft);border-color:rgba(226,165,63,.3);}
+.pref-row-img{width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+.pref-row-body{flex:1;min-width:0;}
+.pref-row-name{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pref-row-sub{font-size:11px;color:var(--ink-3);margin-top:1px;}
+.pref-row-score{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--accent-2);flex-shrink:0;}
 
 .score-hero{display:flex;align-items:center;gap:20px;padding:20px;
   background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
@@ -521,6 +543,7 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 
       <!-- 有图时显示 -->
       <div id="composeHasImg" class="hidden">
+      <div class="compose-main">
 
         <!-- 冲突 banner（步骤 C） -->
         <div class="conflict-banner" id="conflictBanner">
@@ -601,6 +624,20 @@ input[type=range]{width:100%;accent-color:var(--accent);}
           <button class="btn ok" id="btnSaveImg"><svg class="ic"><use href="#ic-save"/></svg>存图（导出当前构图 PNG）</button>
           <button class="btn" id="btnSaveJson"><svg class="ic"><use href="#ic-json"/></svg>导出 info.json</button>
         </div>
+
+      </div>
+
+      <!-- 偏好总览（右侧） -->
+      <div class="compose-side">
+        <div class="side-card typical-card">
+          <div class="dl-title" id="typicalTitle">典型照片</div>
+          <div id="typicalBody"></div>
+        </div>
+        <div class="side-card">
+          <div class="dl-title">图库偏好总览</div>
+          <div class="pref-list" id="prefOverviewList"></div>
+        </div>
+      </div>
 
       </div>
     </div>
@@ -951,6 +988,16 @@ function computePreferenceMatch(m, scheme, subjectRatio, profile){
   return Math.round(schemeComp*0.4 + ratioComp*0.15 + posComp*0.15 + colorComp*0.15 + consComp*0.15);
 }
 
+// 图库里每张照片对当前偏好画像的匹配情况，按匹配度（无画像时按综合分）降序排列
+function computeGalleryOverview(profile){
+  return GALLERY.map(m=>{
+    const scheme=m.scheme||'thirds';
+    const subjectRatio=m.ratio||20;
+    const match=computePreferenceMatch(m, scheme, subjectRatio, profile);
+    return {m, scheme, subjectRatio, match, total:m.score?m.score.total:0};
+  }).sort((a,b)=> profile ? (b.match-a.match) : (b.total-a.total));
+}
+
 /* ============================================================
    图库状态
    ============================================================ */
@@ -1228,6 +1275,41 @@ function syncComposePage(){
   setBar('scCons','scConsBar',sc.cons);
   // 冲突
   updateConflictBanner(m);
+  // 右侧：图库偏好总览 + 典型照片
+  renderComposeSidePanel(profile);
+}
+
+function renderComposeSidePanel(profile){
+  const schemeNames={thirds:'三分法',golden:'黄金分割',symmetry:'对称',diagonal:'对角线'};
+  const overview=computeGalleryOverview(profile);
+  if(!overview.length) return;
+  const top=overview[0];
+
+  document.getElementById('typicalTitle').textContent = profile ? '典型偏好照' : '典型照片（暂按综合分，评价满 3 次后按偏好推荐）';
+  document.getElementById('typicalBody').innerHTML = `
+    <img class="typical-img" src="${top.m.dataURL}" alt="${top.m.name}">
+    <div class="typical-meta">
+      <div class="typical-name">${top.m.name}</div>
+      <div class="typical-sub">方案 ${schemeNames[top.scheme]} · 综合分 ${top.total}</div>
+      ${top.match!==null
+        ? `<div class="typical-match">偏好匹配 ${top.match} / 100</div>`
+        : `<div class="typical-match" style="color:var(--ink-3)">偏好学习中…（还需 ${MIN_SAMPLES-PREFS.length} 次评价）</div>`}
+    </div>
+  `;
+
+  document.getElementById('prefOverviewList').innerHTML = overview.map(({m,scheme,match,total})=>`
+    <div class="pref-row${m.id===S.currentId?' active':''}" data-id="${m.id}">
+      <img class="pref-row-img" src="${m.dataURL}" alt="${m.name}">
+      <div class="pref-row-body">
+        <div class="pref-row-name">${m.name}</div>
+        <div class="pref-row-sub">${schemeNames[scheme]} · ${m.liked===true?'♥ 喜欢':m.liked===false?'不喜欢':'未评价'}</div>
+      </div>
+      <span class="pref-row-score">${match!==null?match:total}</span>
+    </div>
+  `).join('');
+  document.querySelectorAll('.pref-row').forEach(row=>{
+    row.onclick=()=>{ S.currentId=row.dataset.id; syncComposePage(); };
+  });
 }
 
 function updateConflictBanner(m){
