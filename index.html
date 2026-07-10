@@ -268,6 +268,58 @@ svg{display:block;}
 input[type=range]{width:100%;accent-color:var(--accent);}
 
 /* ================================================================
+   识别台
+   ================================================================ */
+.service-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r-sm);
+  font-size:12.5px;margin-bottom:16px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);}
+.service-banner.online{border-color:rgba(107,185,138,.35);background:rgba(107,185,138,.08);color:#a8d9bd;}
+.service-banner.offline{border-color:rgba(221,130,114,.35);background:rgba(221,130,114,.08);color:#f0b3a6;}
+.service-banner code{background:var(--surface-3);padding:1px 6px;border-radius:5px;font-family:var(--mono);}
+.rec-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.rec-tally{font-size:12px;color:var(--ink-3);}
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.rec-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--sh1);overflow:hidden;}
+.rec-card .rec-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--surface-2);}
+.rec-card .rec-body{padding:12px 13px;}
+.rec-card .rec-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;margin-bottom:9px;}
+.rtk-row{margin-bottom:7px;}
+.rtk-row:last-child{margin-bottom:0;}
+.rtk-top{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;gap:8px;}
+.rtk-label{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rtk-val{font-family:var(--mono);color:var(--accent-2);flex-shrink:0;}
+.rtk-track{height:5px;background:var(--surface-3);border-radius:3px;overflow:hidden;}
+.rtk-fill{height:100%;border-radius:3px;background:var(--accent-2);}
+.rec-pending{text-align:center;padding:8px 0;color:var(--ink-3);font-size:12px;}
+.rec-error{color:var(--danger);font-size:11.5px;line-height:1.5;}
+
+/* ================================================================
+   优选台
+   ================================================================ */
+.curate-toolbar{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+.curate-toolbar select{padding:6px 10px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface-2);color:var(--ink);font-size:12.5px;}
+.curate-thresh{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);}
+.curate-thresh input[type=range]{width:140px;}
+.curate-thresh b{font-family:var(--mono);color:var(--ink);}
+.curate-count{font-size:12px;color:var(--ink-3);}
+.curate-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.curate-card{position:relative;border-radius:var(--r-md);overflow:hidden;background:var(--surface-2);
+  border:2px solid transparent;box-shadow:var(--sh1);transition:opacity .2s,border-color .15s;cursor:pointer;}
+.curate-card:hover{border-color:var(--line-s);}
+.curate-card.below-thresh{opacity:.4;}
+.curate-card .cc-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;}
+.curate-card .cc-body{padding:7px 9px;}
+.curate-card .cc-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.curate-card .cc-bars{display:flex;gap:2px;margin-top:5px;height:4px;}
+.curate-card .cc-bars span{flex-grow:1;border-radius:2px;background:var(--surface-3);min-width:2px;}
+.curate-card .cc-score{position:absolute;top:6px;right:6px;background:rgba(13,18,16,.68);color:var(--accent);
+  font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;font-family:var(--mono);
+  border:1px solid rgba(226,165,63,.35);}
+.curate-card .cc-check{position:absolute;top:6px;left:6px;width:18px;height:18px;accent-color:var(--accent);cursor:pointer;}
+
+/* ================================================================
    构图台（只显示评分 + 提示 + 存图）
    ================================================================ */
 .compose-page-wrap{max-width:1120px;}
@@ -683,18 +735,81 @@ input[type=range]{width:100%;accent-color:var(--accent);}
     </div></div>
   </section>
   <section id="page-recognize" class="hidden">
-    <div class="placeholder"><div class="box">
-      <svg class="big-ic"><use href="#ic-recognize"/></svg><h2>识别台 · Recognize</h2>
-      <p>对接 ResNet50（<code>bird_classification_v2.ipynb</code>）：Top-3 鸟种置信度、一键建库。</p>
-      <span class="tag-chip">下一阶段实现</span>
-    </div></div>
+    <div class="ph">
+      <div class="eyebrow">Stage 02 · Recognize</div>
+      <h1>识别台 · Recognize</h1>
+      <p>ResNet50（ImageNet 预训练）· Top-3 鸟种置信度 · 对接 <code>recognize_server.py</code></p>
+    </div>
+
+    <div id="recNoImg" class="no-img-tip">
+      <svg class="ni-ic"><use href="#ic-gallery"/></svg>
+      <div>图库中还没有图片<br><small>先上传图片，再回到识别台批量识别</small></div>
+    </div>
+
+    <div id="recHasImg" class="hidden">
+      <div class="service-banner" id="recServiceBanner">
+        <span class="dot" id="recServiceDot"></span>
+        <span id="recServiceText">正在检测识别服务…</span>
+      </div>
+
+      <div class="rec-toolbar">
+        <button class="btn pri" id="btnRecognizeAll"><svg class="ic"><use href="#ic-recognize"/></svg>一键识别全部</button>
+        <span class="rec-tally" id="recTally"></span>
+        <div class="gal-spacer"></div>
+        <button class="btn sm" id="btnExportRecognize"><svg class="ic"><use href="#ic-json"/></svg>导出识别记录</button>
+      </div>
+
+      <div class="rec-grid" id="recGrid"></div>
+    </div>
   </section>
   <section id="page-curate" class="hidden">
-    <div class="placeholder"><div class="box">
-      <svg class="big-ic"><use href="#ic-curate"/></svg><h2>优选台 · Curate</h2>
-      <p>美学评分可视化、权重实时重算、批量优选。</p>
-      <span class="tag-chip">下一阶段实现</span>
-    </div></div>
+    <div class="ph">
+      <div class="eyebrow">Stage 03 · Curate</div>
+      <h1>优选台 · Curate</h1>
+      <p>GouTu3 美学评分总览 · 权重实时重算（与构图台共用）· 阈值筛选 · 批量导出优选结果</p>
+    </div>
+
+    <div id="curateNoImg" class="no-img-tip">
+      <svg class="ni-ic"><use href="#ic-gallery"/></svg>
+      <div>图库中还没有图片<br><small>先上传图片，再回到优选台查看评分</small></div>
+    </div>
+
+    <div id="curateHasImg" class="hidden">
+      <div class="weight-card" style="max-width:480px;">
+        <h3>评分权重（与构图台共用，实时重算）</h3>
+        <div class="w-row">
+          <div class="w-lab"><span>锚点位置</span><b id="cwPosD">0.30</b></div>
+          <input type="range" id="cwPos" min="0" max="100" value="30">
+        </div>
+        <div class="w-row">
+          <div class="w-lab"><span>色彩比例</span><b id="cwRatioD">0.40</b></div>
+          <input type="range" id="cwRatio" min="0" max="100" value="40">
+        </div>
+        <div class="w-row">
+          <div class="w-lab"><span>色相一致性</span><b id="cwConsD">0.30</b></div>
+          <input type="range" id="cwCons" min="0" max="100" value="30">
+        </div>
+      </div>
+
+      <div class="curate-toolbar">
+        <select id="curateSort">
+          <option value="total_desc">综合分 高→低</option>
+          <option value="total_asc">综合分 低→高</option>
+          <option value="name">文件名</option>
+        </select>
+        <div class="curate-thresh">
+          <span>优选阈值</span>
+          <input type="range" id="curateThreshold" min="0" max="100" value="60">
+          <b id="curateThresholdD">60</b>
+        </div>
+        <span class="curate-count" id="curateCount"></span>
+        <div class="gal-spacer"></div>
+        <button class="btn sm" id="curateSelectAll">全选达标</button>
+        <button class="btn sm pri" id="curateExport"><svg class="ic"><use href="#ic-json"/></svg>导出优选结果</button>
+      </div>
+
+      <div class="curate-grid" id="curateGrid"></div>
+    </div>
   </section>
 
 </main>
@@ -1022,7 +1137,7 @@ function addImages(files){
           const final=finalizeBlocks(blocks);
           const score=computeScore(final,{pos:.3,ratio:.4,cons:.3});
           GALLERY.push({id,name:f.name,dataURL,el:img,blocks,conflicts,
-            conflictChoice:{},conflictIdx:0,score,scheme:'thirds',ratio:20,liked:null});
+            conflictChoice:{},conflictIdx:0,score,scheme:'thirds',ratio:20,liked:null,recognize:null});
           res();
         };
         img.src=dataURL;
@@ -1342,18 +1457,187 @@ function exportJson(data, filename){
 }
 
 /* ============================================================
-   权重同步
+   权重同步（构图台 / 优选台 共用同一份 S.weights）
    ============================================================ */
+function applyWeightsFrom(pPct, rPct, cPct){
+  const sum=pPct+rPct+cPct||1;
+  S.weights={pos:pPct/sum, ratio:rPct/sum, cons:cPct/sum};
+  ['wPosD','cwPosD'].forEach(id=>{const el=document.getElementById(id); if(el) el.textContent=S.weights.pos.toFixed(2);});
+  ['wRatioD','cwRatioD'].forEach(id=>{const el=document.getElementById(id); if(el) el.textContent=S.weights.ratio.toFixed(2);});
+  ['wConsD','cwConsD'].forEach(id=>{const el=document.getElementById(id); if(el) el.textContent=S.weights.cons.toFixed(2);});
+  const p=Math.round(S.weights.pos*100), r=Math.round(S.weights.ratio*100), c=Math.round(S.weights.cons*100);
+  ['wPos','cwPos'].forEach(id=>{const el=document.getElementById(id); if(el) el.value=p;});
+  ['wRatio','cwRatio'].forEach(id=>{const el=document.getElementById(id); if(el) el.value=r;});
+  ['wCons','cwCons'].forEach(id=>{const el=document.getElementById(id); if(el) el.value=c;});
+}
 function syncWeights(){
-  const p=+document.getElementById('wPos').value;
-  const r=+document.getElementById('wRatio').value;
-  const c=+document.getElementById('wCons').value;
-  const sum=p+r+c||1;
-  S.weights={pos:p/sum,ratio:r/sum,cons:c/sum};
-  document.getElementById('wPosD').textContent=S.weights.pos.toFixed(2);
-  document.getElementById('wRatioD').textContent=S.weights.ratio.toFixed(2);
-  document.getElementById('wConsD').textContent=S.weights.cons.toFixed(2);
+  applyWeightsFrom(+document.getElementById('wPos').value, +document.getElementById('wRatio').value, +document.getElementById('wCons').value);
   syncComposePage();
+}
+function syncCurateWeights(){
+  applyWeightsFrom(+document.getElementById('cwPos').value, +document.getElementById('cwRatio').value, +document.getElementById('cwCons').value);
+  renderCuratePage();
+}
+
+/* ============================================================
+   识别台（对接 recognize_server.py，从 bird_classification_v2.ipynb 提取的 ResNet50 服务）
+   ============================================================ */
+const RECOGNIZE_API='http://localhost:5050';
+let recServiceOnline=null;
+
+async function checkRecognizeService(){
+  const banner=document.getElementById('recServiceBanner');
+  const dot=document.getElementById('recServiceDot');
+  const text=document.getElementById('recServiceText');
+  if(!banner) return;
+  try{
+    const r=await fetch(RECOGNIZE_API+'/health');
+    if(!r.ok) throw new Error('bad status');
+    const data=await r.json();
+    recServiceOnline=true;
+    banner.className='service-banner online';
+    dot.className='dot on';
+    text.textContent='识别服务在线 · 设备 '+data.device+' · '+data.num_classes+' 个类别';
+  }catch(e){
+    recServiceOnline=false;
+    banner.className='service-banner offline';
+    dot.className='dot';
+    text.innerHTML='识别服务未连接 · 请先运行 <code>python3 recognize_server.py</code>（默认监听 5050 端口）';
+  }
+}
+
+async function dataURLToBlob(dataURL){
+  const r=await fetch(dataURL);
+  return r.blob();
+}
+
+async function recognizeOne(m){
+  try{
+    const blob=await dataURLToBlob(m.dataURL);
+    const fd=new FormData();
+    fd.append('image', blob, m.name);
+    const r=await fetch(RECOGNIZE_API+'/recognize', {method:'POST', body:fd});
+    const data=await r.json();
+    if(!r.ok || data.error) throw new Error(data.error||'识别失败');
+    m.recognize={topk:data.predictions.map(p=>[p.label,p.confidence]), ts:Date.now()};
+  }catch(e){
+    m.recognize={error:e.message||String(e)};
+  }
+  renderRecognizePage();
+}
+
+async function recognizeAllUnrecognized(){
+  await checkRecognizeService();
+  if(!recServiceOnline) return;
+  const targets=GALLERY.filter(m=>!m.recognize || m.recognize.error);
+  for(const m of targets){
+    m.recognize={pending:true};
+    renderRecognizePage();
+    await recognizeOne(m);
+  }
+}
+
+function speciesTally(){
+  const tally={};
+  GALLERY.forEach(m=>{
+    if(m.recognize && m.recognize.topk){
+      const top=m.recognize.topk[0][0];
+      tally[top]=(tally[top]||0)+1;
+    }
+  });
+  return tally;
+}
+
+function renderRecognizePage(){
+  const noImg=document.getElementById('recNoImg');
+  const hasImg=document.getElementById('recHasImg');
+  if(!GALLERY.length){ noImg.style.display=''; hasImg.classList.add('hidden'); return; }
+  noImg.style.display='none'; hasImg.classList.remove('hidden');
+
+  const tallyEntries=Object.entries(speciesTally());
+  document.getElementById('recTally').textContent = tallyEntries.length
+    ? '已识别 '+tallyEntries.length+' 个物种：'+tallyEntries.map(([k,v])=>k+'×'+v).join('，')
+    : '尚未识别任何照片';
+
+  document.getElementById('recGrid').innerHTML = GALLERY.map(m=>{
+    let body;
+    if(m.recognize && m.recognize.pending){
+      body='<div class="rec-pending">识别中…</div>';
+    }else if(m.recognize && m.recognize.error){
+      body=`<div class="rec-error">识别失败：${m.recognize.error}</div>
+        <button class="btn sm" data-retry="${m.id}" style="margin-top:8px;width:100%;">重试</button>`;
+    }else if(m.recognize && m.recognize.topk){
+      body='<div class="rec-topk">'+m.recognize.topk.map(([label,conf])=>`
+        <div class="rtk-row">
+          <div class="rtk-top"><span class="rtk-label">${label}</span><span class="rtk-val">${(conf*100).toFixed(1)}%</span></div>
+          <div class="rtk-track"><div class="rtk-fill" style="width:${(conf*100).toFixed(1)}%"></div></div>
+        </div>`).join('')+'</div>';
+    }else{
+      body=`<button class="btn sm" data-recognize="${m.id}" style="width:100%;"><svg class="ic"><use href="#ic-recognize"/></svg>识别此图</button>`;
+    }
+    return `<div class="rec-card"><img class="rec-img" src="${m.dataURL}" alt="${m.name}">
+      <div class="rec-body"><div class="rec-name" title="${m.name}">${m.name}</div>${body}</div></div>`;
+  }).join('');
+
+  document.getElementById('recGrid').querySelectorAll('[data-recognize]').forEach(btn=>{
+    btn.onclick=()=>{ const m=GALLERY.find(x=>x.id===btn.dataset.recognize); if(m){ m.recognize={pending:true}; renderRecognizePage(); recognizeOne(m); } };
+  });
+  document.getElementById('recGrid').querySelectorAll('[data-retry]').forEach(btn=>{
+    btn.onclick=()=>{ const m=GALLERY.find(x=>x.id===btn.dataset.retry); if(m){ m.recognize={pending:true}; renderRecognizePage(); recognizeOne(m); } };
+  });
+}
+
+/* ============================================================
+   优选台（GouTu3 美学评分总览，复用 computeScore，不改动算法本身）
+   ============================================================ */
+let curateSort='total_desc';
+let curateThreshold=60;
+const curateSelected=new Set();
+
+function renderCuratePage(){
+  const noImg=document.getElementById('curateNoImg');
+  const hasImg=document.getElementById('curateHasImg');
+  if(!GALLERY.length){ noImg.style.display=''; hasImg.classList.add('hidden'); return; }
+  noImg.style.display='none'; hasImg.classList.remove('hidden');
+
+  // 用当前共享权重重算所有照片的分数（只是重新调用 computeScore，不改动其内部逻辑）
+  GALLERY.forEach(m=>{ m.score=computeScore(finalizeBlocks(m.blocks), S.weights); });
+
+  let list=[...GALLERY];
+  if(curateSort==='total_desc') list.sort((a,b)=>b.score.total-a.score.total);
+  else if(curateSort==='total_asc') list.sort((a,b)=>a.score.total-b.score.total);
+  else if(curateSort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+
+  const passCount=list.filter(m=>m.score.total>=curateThreshold).length;
+  document.getElementById('curateCount').textContent=`达标 ${passCount} / 共 ${list.length}`;
+
+  document.getElementById('curateGrid').innerHTML = list.map(m=>{
+    const below = m.score.total < curateThreshold;
+    const checked = curateSelected.has(m.id);
+    return `<div class="curate-card${below?' below-thresh':''}" data-id="${m.id}">
+      <input type="checkbox" class="cc-check" data-check="${m.id}" ${checked?'checked':''}>
+      <img class="cc-img" src="${m.dataURL}" alt="${m.name}">
+      <span class="cc-score">${m.score.total}</span>
+      <div class="cc-body">
+        <div class="cc-name" title="${m.name}">${m.name}</div>
+        <div class="cc-bars">
+          <span style="flex-grow:${m.score.pos||0.01};background:var(--c-thirds)"></span>
+          <span style="flex-grow:${m.score.ratio||0.01};background:var(--c-golden)"></span>
+          <span style="flex-grow:${m.score.cons||0.01};background:var(--c-sym)"></span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('curateGrid').querySelectorAll('[data-check]').forEach(cb=>{
+    cb.onclick=e=>e.stopPropagation();
+    cb.onchange=()=>{
+      if(cb.checked) curateSelected.add(cb.dataset.check); else curateSelected.delete(cb.dataset.check);
+    };
+  });
+  document.getElementById('curateGrid').querySelectorAll('.curate-card').forEach(card=>{
+    card.onclick=()=>{ S.currentId=card.dataset.id; goPage('compose'); };
+  });
 }
 
 /* ============================================================
@@ -1368,6 +1652,8 @@ function goPage(p){
   if(topLabel) topLabel.textContent=PAGE_LABELS[p]||p;
   if(p==='compose') syncComposePage();
   if(p==='gallery') renderGallery(document.getElementById('galSearch').value);
+  if(p==='recognize'){ renderRecognizePage(); checkRecognizeService(); }
+  if(p==='curate') renderCuratePage();
 }
 
 /* ============================================================
@@ -1376,8 +1662,10 @@ function goPage(p){
 async function handleFiles(files){
   await addImages(files);
   renderGallery();
-  // 如在构图台，自动同步
+  // 如在构图台/识别台/优选台，自动同步
   if(!document.getElementById('page-compose').classList.contains('hidden')) syncComposePage();
+  if(!document.getElementById('page-recognize').classList.contains('hidden')) renderRecognizePage();
+  if(!document.getElementById('page-curate').classList.contains('hidden')) renderCuratePage();
 }
 
 /* ============================================================
@@ -1427,6 +1715,33 @@ function bindAll(){
   document.getElementById('cGoUpload').onclick=()=>document.getElementById('fileInput').click();
   document.getElementById('cGoGallery').onclick=()=>goPage('gallery');
   document.getElementById('tipGoGallery').onclick=()=>goPage('gallery');
+
+  // 识别台
+  document.getElementById('btnRecognizeAll').onclick=recognizeAllUnrecognized;
+  document.getElementById('btnExportRecognize').onclick=()=>{
+    const records=GALLERY.map(m=>({name:m.name, topk:(m.recognize&&m.recognize.topk)||null}));
+    exportJson({records}, 'neatpic_recognize.json');
+  };
+
+  // 优选台
+  ['cwPos','cwRatio','cwCons'].forEach(id=>{ document.getElementById(id).oninput=syncCurateWeights; });
+  document.getElementById('curateSort').onchange=e=>{ curateSort=e.target.value; renderCuratePage(); };
+  document.getElementById('curateThreshold').oninput=e=>{
+    curateThreshold=+e.target.value;
+    document.getElementById('curateThresholdD').textContent=curateThreshold;
+    renderCuratePage();
+  };
+  document.getElementById('curateSelectAll').onclick=()=>{
+    GALLERY.forEach(m=>{ if(m.score.total>=curateThreshold) curateSelected.add(m.id); });
+    renderCuratePage();
+  };
+  document.getElementById('curateExport').onclick=()=>{
+    const items=GALLERY.filter(m=>curateSelected.has(m.id)).map(m=>({
+      name:m.name, total:m.score.total, pos:m.score.pos, ratio:m.score.ratio, cons:m.score.cons,
+      scheme:m.scheme||'thirds', subjectRatio:m.ratio||20,
+    }));
+    exportJson({threshold:curateThreshold, weights:S.weights, selected:items}, 'neatpic_curate_selection.json');
+  };
 
   // 冲突按钮
   function nextConflict(choice){
