@@ -247,6 +247,61 @@ svg{display:block;}
   transform:translateX(100%);transition:transform .25s;
 }
 .report-drawer.open{transform:translateX(0);}
+
+/* --- 报告抽屉内容 --- */
+.report-drawer-body{display:flex;flex-direction:column;gap:16px;}
+.report-hero{display:flex;gap:14px;align-items:flex-start;}
+.report-media{width:160px;aspect-ratio:4/3;flex-shrink:0;
+  background:var(--surface-2);border:1px solid var(--line);
+  border-radius:var(--r-md);overflow:hidden;}
+.report-media img{width:100%;height:100%;object-fit:cover;display:block;}
+.report-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;}
+.report-title{font-size:14px;font-weight:700;line-height:1.4;
+  word-break:break-word;color:var(--ink);}
+.report-sub{font-size:12px;color:var(--ink-3);line-height:1.5;}
+.report-pill{display:inline-block;width:max-content;padding:5px 10px;
+  border-radius:999px;background:var(--surface-2);border:1px solid var(--line);
+  font-size:12px;color:var(--ink-2);}
+.report-section{padding:14px;border:1px solid var(--line);
+  border-radius:var(--r-md);background:var(--surface-2);}
+.report-section .dl-title{margin-bottom:10px;}
+.report-score-grid{display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+.report-score-item{padding:10px 8px;border-radius:var(--r-sm);
+  background:var(--surface);border:1px solid var(--line);
+  text-align:center;}
+.report-score-item .k{font-size:10.5px;color:var(--ink-3);
+  margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+.report-score-item .v{font-size:14px;font-weight:700;color:var(--ink);
+  font-family:var(--mono);}
+.report-birds{display:flex;flex-direction:column;gap:8px;}
+.report-bird{display:flex;gap:10px;padding:10px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-sm);}
+.report-bird img{width:48px;height:48px;object-fit:cover;
+  border-radius:7px;flex-shrink:0;}
+.report-bird .rb-name{font-size:12.5px;font-weight:600;color:var(--ink);
+  margin-bottom:3px;}
+.report-bird .rb-meta{font-size:11px;color:var(--ink-3);line-height:1.5;}
+.report-critique{font-size:13px;color:var(--ink-2);line-height:1.75;}
+.report-critique .md-h{font-size:14px;font-weight:700;color:var(--ink);
+  margin:10px 0 6px;}
+.report-critique .md-p{margin:0 0 8px;}
+.report-critique .md-ul,.report-critique .md-ol{margin:0 0 8px 18px;
+  padding-left:8px;}
+.report-critique .md-ul li,.report-critique .md-ol li{margin:4px 0;}
+.report-critique .md-blockquote{margin:8px 0;padding:8px 10px;
+  border-left:3px solid var(--accent-2);
+  background:var(--surface);border-radius:4px;color:var(--ink-2);}
+.report-critique .md-pre{background:#111827;color:#f3f4f6;
+  padding:10px;border-radius:8px;overflow:auto;
+  font-size:11.5px;line-height:1.5;margin:8px 0;}
+.report-critique .md-code{background:rgba(0,0,0,.08);padding:1px 4px;
+  border-radius:4px;font-family:var(--mono);font-size:11px;}
+.report-critique .md-link{color:var(--accent-2);text-decoration:underline;}
+.report-critique .md-hr{border:none;border-top:1px solid var(--line);
+  margin:10px 0;}
+.report-empty{font-size:12px;color:var(--ink-3);}
+
 .drawer-head{display:flex;align-items:center;gap:10px;padding:14px 16px;
   border-bottom:1px solid var(--line);flex-shrink:0;}
 .drawer-head h3{font-size:14px;font-weight:600;flex:1;}
@@ -1740,7 +1795,7 @@ function renderReportDrawer(){
     </div>
     <div class="report-section">
       <div class="dl-title">识别结果</div>
-      ${birds.length ? `<div class="report-birds">${birds.map(b=>`<div class="report-bird"><img src="${b.crop_data_url}" alt="${b.species_en}"><div><div class="name">${b.species_en}</div><div class="meta">置信度：${(b.species_confidence*100).toFixed(1)}%${b.info&&b.info.chinese_name?`<br>中文名：${b.info.chinese_name}`:''}${b.info&&b.info.scientific_name?`<br>学名：${b.info.scientific_name}`:''}</div></div></div>`).join('')}</div>` : '<div class="report-empty">未检测到鸟类</div>'}
+      ${birds.length ? `<div class="report-birds">${birds.map(b=>`<div class="report-bird"><img src="${b.crop_data_url}" alt="${b.species_en}"><div><div class="rb-name">${b.species_en}</div><div class="rb-meta">置信度：${(b.species_confidence*100).toFixed(1)}%${b.info&&b.info.chinese_name?` · 中文名：${b.info.chinese_name}`:''}${b.info&&b.info.scientific_name?` · 学名：${b.info.scientific_name}`:''}</div></div></div>`).join('')}</div>` : '<div class="report-empty">未检测到鸟类</div>'}
     </div>
     <div class="report-section">
       <div class="dl-title">DeepSeek 说明</div>
