@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>完整报告</title>
+  <style>
+    :root{color-scheme:light;--bg:#f5f7f8;--surface:#fff;--surface-2:#f2f5f7;--line:#dfe5ea;--ink:#17212b;--ink-2:#5f6c79;--accent:#2f7cf6;--accent-2:#16a34a;}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink);} 
+    .wrap{max-width:1100px;margin:24px auto;padding:20px;} .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);overflow:hidden;}
+    .hero{display:grid;grid-template-columns:minmax(280px, 1.1fr) minmax(300px, .9fr);gap:16px;padding:20px;} .media{background:var(--surface-2);border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:320px;} .media img{width:100%;height:100%;object-fit:contain;display:block;}
+    .meta{display:flex;flex-direction:column;gap:12px;} .title{font-size:22px;font-weight:700;word-break:break-all;} .sub{color:var(--ink-2);font-size:13px;line-height:1.6;} .pill{display:inline-block;padding:6px 10px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--ink-2);width:max-content;}
+    .section{border-top:1px solid var(--line);padding:20px;} .section h3{margin:0 0 10px;font-size:15px;} .grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px,1fr));gap:12px;}
+    .kv{padding:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;} .kv .k{font-size:11px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;} .kv .v{font-size:14px;font-weight:600;word-break:break-word;}
+    .bird{display:flex;gap:12px;padding:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;} .bird img{width:64px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0;} .bird .name{font-weight:700;margin-bottom:4px;} .bird .meta{font-size:12px;color:var(--ink-2);line-height:1.5;}
+    .critique{font-size:14px;line-height:1.8;color:var(--ink);} .critique h1,.critique h2,.critique h3,.critique h4{margin:10px 0 6px;} .critique p{margin:0 0 8px;} .critique ul,.critique ol{margin:0 0 8px 18px;} .critique blockquote{margin:8px 0;padding:8px 10px;border-left:3px solid var(--accent-2);background:var(--surface-2);border-radius:6px;} .critique code{background:rgba(0,0,0,.08);padding:1px 4px;border-radius:4px;font-family:ui-monospace,monospace;font-size:12px;} .critique pre{background:#111827;color:#f3f4f6;padding:10px;border-radius:8px;overflow:auto;font-size:12px;line-height:1.5;} .critique a{color:var(--accent);text-decoration:underline;} .empty{color:var(--ink-2);font-size:13px;}
+    @media (max-width:860px){.hero{grid-template-columns:1fr;}} .btn{display:inline-block;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;text-decoration:none;color:var(--ink);font-size:13px;margin-top:8px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="hero">
+        <div class="media"><img id="reportImage" alt="报告图片"></div>
+        <div class="meta">
+          <div class="title" id="reportTitle">完整报告</div>
+          <div class="sub" id="reportSub">加载中…</div>
+          <div class="pill" id="reportScore">综合分：—</div>
+          <a class="btn" id="reportDownload" href="#" download="neatpic_report.jpg">下载当前图片</a>
+        </div>
+      </div>
+      <div class="section">
+        <h3>美学得分</h3>
+        <div class="grid" id="scoreGrid"></div>
+      </div>
+      <div class="section">
+        <h3>识别结果</h3>
+        <div id="birdList"></div>
+      </div>
+      <div class="section">
+        <h3>DeepSeek 说明</h3>
+        <div class="critique" id="critiqueBox"></div>
+      </div>
+    </div>
+  </div>
+<script>
+function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function stripMdFence(text){const raw=String(text||'').trim();if(!raw)return'';const m=raw.match(/^```(?:markdown|md)?\s*\n([\s\S]*?)\n```\s*$/i);if(m)return m[1].trim();if(/^```/.test(raw))return raw.replace(/^```[a-zA-Z]*\s*/,'').replace(/\s*```$/,'').trim();return raw;}
+function formatInlineMd(text){let t=escapeHtml(text);t=t.replace(/`([^`]+)`/g,'<code>$1</code>');t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');t=t.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g,'<em>$1</em>');t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');return t.replace(/\n/g,'<br>');}
+function renderMarkdownLite(md){const raw=stripMdFence(md);const lines=raw.split(/\r?\n/);let html='';let inList=false;let listType=null;let inCode=false;let codeLines=[];const closeList=()=>{if(inList){html+=listType==='ol'?'</ol>':'</ul>';inList=false;listType=null;}};const closeCode=()=>{if(inCode){html+=`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`;inCode=false;codeLines=[];}};for(let i=0;i<lines.length;i++){const rawLine=lines[i];const line=rawLine.trim();if(!line){closeList();continue;}if(/^```/.test(line)){closeList();if(inCode)closeCode();else{inCode=true;codeLines=[];}continue;}if(inCode){codeLines.push(rawLine);continue;}const h=/^(#{1,6})\s+(.*)$/.exec(line);if(h){closeList();const level=Math.min(h[1].length,4);html+=`<h${level}>${formatInlineMd(h[2])}</h${level}>`;continue;}if(/^>\s+/.test(line)){closeList();html+=`<blockquote>${formatInlineMd(line.replace(/^>\s+/,''))}</blockquote>`;continue;}if(/^[-*]\s+/.test(line)){if(!inList||listType!=='ul'){closeList();html+='<ul>';inList=true;listType='ul';}html+=`<li>${formatInlineMd(line.replace(/^[-*]\s+/,''))}</li>`;continue;}if(/^\d+[.)]\s+/.test(line)){if(!inList||listType!=='ol'){closeList();html+='<ol>';inList=true;listType='ol';}html+=`<li>${formatInlineMd(line.replace(/^\d+[.)]\s+/,''))}</li>`;continue;}if(/^[-*_]{3,}$/.test(line)){closeList();html+='<hr>';continue;}closeList();html+=`<p>${formatInlineMd(line)}</p>`;}closeCode();closeList();return html||'<p class="empty">暂无内容</p>';}
+function loadReport(){
+  const raw=sessionStorage.getItem('neatpic_report_payload');
+  if(!raw){ document.getElementById('reportTitle').textContent='没有可显示的报告'; document.getElementById('reportSub').textContent='请先在识别台中点击“查看完整报告”'; return; }
+  const data=JSON.parse(raw);
+  document.getElementById('reportImage').src=data.mediaSrc || data.dataURL;
+  document.getElementById('reportImage').alt=data.name;
+  document.getElementById('reportTitle').textContent=data.name;
+  document.getElementById('reportSub').textContent='识别结果与 DeepSeek 评价已整理为完整报告';
+  document.getElementById('reportDownload').href=data.mediaSrc || data.dataURL;
+  document.getElementById('reportDownload').download='neatpic_report_'+(data.name||'image')+'.jpg';
+  const scoreGrid=document.getElementById('scoreGrid');
+  if(data.aesthetic){
+    document.getElementById('reportScore').textContent='综合分：'+data.aesthetic.total;
+    scoreGrid.innerHTML=[
+      ['构图', data.aesthetic.composition],
+      ['色彩丰富度', data.aesthetic.richness],
+      ['色彩纯净度', data.aesthetic.purity],
+      ['综合', data.aesthetic.total],
+    ].map(([k,v])=>`<div class="kv"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+  } else if(data.score){
+    document.getElementById('reportScore').textContent='综合分：'+data.score.total;
+    scoreGrid.innerHTML=[['综合', data.score.total], ['锚点', data.score.pos], ['比例', data.score.ratio], ['一致性', data.score.cons]].map(([k,v])=>`<div class="kv"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+  } else {
+    document.getElementById('reportScore').textContent='综合分：—';
+    scoreGrid.innerHTML='<div class="empty">暂无美学评分</div>';
+  }
+  const birdList=document.getElementById('birdList');
+  if(data.birds && data.birds.length){
+    birdList.innerHTML=data.birds.map(b=>`<div class="bird"><img src="${b.crop_data_url}" alt="${b.species_en}"><div><div class="name">${b.species_en}</div><div class="meta">置信度：${(b.species_confidence*100).toFixed(1)}%${b.info&&b.info.chinese_name?`<br>中文名：${b.info.chinese_name}`:''}${b.info&&b.info.scientific_name?`<br>学名：${b.info.scientific_name}`:''}</div></div></div>`).join('');
+  } else {
+    birdList.innerHTML='<div class="empty">未检测到鸟类</div>';
+  }
+  document.getElementById('critiqueBox').innerHTML=renderMarkdownLite(data.critique||'');
+}
+loadReport();
+</script>
+</body>
+</html>

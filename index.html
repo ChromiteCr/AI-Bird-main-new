@@ -239,6 +239,14 @@ svg{display:block;}
   transform:translateX(100%);transition:transform .25s;
 }
 .compose-drawer.open{transform:translateX(0);}
+.report-drawer{
+  position:fixed;top:56px;right:0;bottom:0;width:min(560px,100%);
+  background:var(--surface);border-left:1px solid var(--line);
+  box-shadow:-8px 0 32px rgba(0,0,0,.4);
+  z-index:110;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .25s;
+}
+.report-drawer.open{transform:translateX(0);}
 .drawer-head{display:flex;align-items:center;gap:10px;padding:14px 16px;
   border-bottom:1px solid var(--line);flex-shrink:0;}
 .drawer-head h3{font-size:14px;font-weight:600;flex:1;}
@@ -275,15 +283,18 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 .service-banner.online{border-color:rgba(107,185,138,.35);background:rgba(107,185,138,.08);color:#a8d9bd;}
 .service-banner.offline{border-color:rgba(221,130,114,.35);background:rgba(221,130,114,.08);color:#f0b3a6;}
 .service-banner code{background:var(--surface-3);padding:1px 6px;border-radius:5px;font-family:var(--mono);}
-.rec-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.rec-toolbar{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
 .rec-tally{font-size:12px;color:var(--ink-3);}
-.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.lazy-toggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);cursor:pointer;}
+.lazy-toggle input{accent-color:var(--accent);}
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
 .rec-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:var(--sh1);overflow:hidden;}
-.rec-card .rec-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--surface-2);}
-.rec-card .rec-body{padding:12px 13px;}
+.rec-card-media{width:100%;aspect-ratio:16/10;background:var(--surface-2);overflow:hidden;}
+.rec-media-img{width:100%;height:100%;object-fit:cover;display:block;}
+.rec-card .rec-body{padding:14px 15px;}
 .rec-card .rec-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis;margin-bottom:9px;}
+  text-overflow:ellipsis;margin-bottom:10px;}
 .rtk-row{margin-bottom:7px;}
 .rtk-row:last-child{margin-bottom:0;}
 .rtk-top{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;gap:8px;}
@@ -293,6 +304,31 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 .rtk-fill{height:100%;border-radius:3px;background:var(--accent-2);}
 .rec-pending{text-align:center;padding:8px 0;color:var(--ink-3);font-size:12px;}
 .rec-error{color:var(--danger);font-size:11.5px;line-height:1.5;}
+.rec-birds{display:flex;flex-direction:column;gap:9px;margin-bottom:13px;}
+.rec-bird-row{display:flex;gap:10px;padding:9px;background:var(--surface-2);border-radius:var(--r-sm);}
+.rec-crop{width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--surface-3);}
+.rec-bird-info{flex:1;min-width:0;}
+.rec-encyclopedia{margin-top:7px;font-size:11.5px;color:var(--ink-3);line-height:1.65;}
+.rec-encyclopedia div{margin-bottom:2px;}
+.rec-encyclopedia b{color:var(--ink-2);}
+.rec-aesthetic{margin-bottom:13px;padding-top:11px;border-top:1px solid var(--line);}
+.rec-aesthetic-total{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-2);margin-top:9px;}
+.rec-aesthetic-total b{font-family:var(--mono);font-size:17px;color:var(--accent);}
+.rec-critique{font-size:12px;color:var(--ink-2);line-height:1.7;
+  background:var(--surface-2);border-radius:var(--r-sm);padding:11px 12px;margin-bottom:13px;
+  max-height:220px;overflow-y:auto;}
+.rec-critique .md-h{font-size:13px;font-weight:700;color:var(--ink);margin:8px 0 6px;}
+.rec-critique .md-p{margin:0 0 8px;}
+.rec-critique .md-ul,.rec-critique .md-ol{margin:0 0 8px 18px;padding-left:8px;}
+.rec-critique .md-ul li,.rec-critique .md-ol li{margin:4px 0;}
+.rec-critique .md-blockquote{margin:8px 0;padding:8px 10px;border-left:3px solid var(--accent-2);background:rgba(255,255,255,.28);color:var(--ink-2);border-radius:4px;}
+.rec-critique .md-pre{background:#111827;color:#f3f4f6;padding:10px;border-radius:8px;overflow:auto;font-size:11.5px;line-height:1.5;margin:8px 0;}
+.rec-critique .md-code{background:rgba(0,0,0,.08);padding:1px 4px;border-radius:4px;font-family:var(--mono);font-size:11px;}
+.rec-critique .md-link{color:var(--accent-2);text-decoration:underline;}
+.rec-critique .md-hr{border:none;border-top:1px solid var(--line);margin:10px 0;}
+.rec-critique .md-spacer{height:4px;}
+.rec-lazy{border-top:1px solid var(--line);padding-top:11px;}
+.rec-lazy-img{width:100%;border-radius:var(--r-sm);display:block;margin:9px 0;}
 
 /* ================================================================
    优选台
@@ -738,7 +774,7 @@ input[type=range]{width:100%;accent-color:var(--accent);}
     <div class="ph">
       <div class="eyebrow">Stage 02 · Recognize</div>
       <h1>识别台 · Recognize</h1>
-      <p>ResNet50（ImageNet 预训练）· Top-3 鸟种置信度 · 对接 <code>recognize_server.py</code></p>
+      <p>YOLOv8 检测 + DeepLabV3 分割 + CLIP 品种识别 + DeepSeek 中文百科/AI 点评 · 对接 <code>bird_classification_server.py</code></p>
     </div>
 
     <div id="recNoImg" class="no-img-tip">
@@ -754,6 +790,7 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 
       <div class="rec-toolbar">
         <button class="btn pri" id="btnRecognizeAll"><svg class="ic"><use href="#ic-recognize"/></svg>一键识别全部</button>
+        <label class="lazy-toggle"><input type="checkbox" id="recLazyMode">懒人模式（自动裁剪+色彩微调）</label>
         <span class="rec-tally" id="recTally"></span>
         <div class="gal-spacer"></div>
         <button class="btn sm" id="btnExportRecognize"><svg class="ic"><use href="#ic-json"/></svg>导出识别记录</button>
@@ -814,6 +851,15 @@ input[type=range]{width:100%;accent-color:var(--accent);}
 
 </main>
 </div>
+</div>
+
+<!-- ===================== 完整报告抽屉 ===================== -->
+<div class="report-drawer" id="reportDrawer">
+  <div class="drawer-head">
+    <h3 id="reportDrawerTitle">完整报告</h3>
+    <button class="btn sm" id="reportDrawerClose">✕ 关闭</button>
+  </div>
+  <div class="drawer-body report-drawer-body" id="reportDrawerBody"></div>
 </div>
 
 <!-- ===================== 构图调试抽屉 ===================== -->
@@ -965,54 +1011,30 @@ function detectConflicts(blocks,aiR,thr=10){
 function finalizeBlocks(b){ return b; }
 
 /* E: compute_score */
-function computeScore(blocks, weights){
-  if(!blocks.length) return {pos:0,ratio:0,cons:0,total:0,anchors:[]};
+// 取 top-3 色块作锚点——只给构图抽屉画色块/锚点图层用的可视化辅助，
+// 和评分本身无关，评分已经换成后端 bird_classification 管线的结果。
+function pickAnchors(blocks){
+  if(!blocks.length) return [];
   const sorted=[...blocks].sort((a,b)=>{
     if(Math.abs(b.sat-a.sat)>0.01) return b.sat-a.sat;
     if(Math.abs(a.val-b.val)>0.01) return a.val-b.val;
     return b.area-a.area;
   });
-  const anchors=sorted.slice(0,3);
-  const cross=[[1/3,1/3],[2/3,1/3],[1/3,2/3],[2/3,2/3]];
-  const thr=Math.hypot(1,1)*0.1;
-  let good=0;
-  anchors.forEach(b=>{
-    const [cx,cy]=b.center;
-    for(const [px,py] of cross){
-      if(Math.hypot(cx-px,cy-py)<=thr){good++;break;}
-    }
-  });
-  const posScore=(good/3)*100;
+  return sorted.slice(0,3);
+}
 
-  const colorArea={};
-  blocks.forEach(b=>{colorArea[b.color]=(colorArea[b.color]||0)+b.area;});
-  const top3=Object.entries(colorArea).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  let ratioScore=0;
-  if(top3.length>=3){
-    const tot=top3.reduce((s,x)=>s+x[1],0);
-    const err=top3.map((x,i)=>Math.abs(x[1]/tot-[0.6,0.3,0.1][i])).reduce((s,v)=>s+v,0);
-    ratioScore=Math.max(0,100-err*100);
-  }
-
-  const colorHues={};
-  blocks.forEach(b=>{ if(!colorHues[b.color])colorHues[b.color]=[]; colorHues[b.color].push(b.hue); });
-  function hueStd(hs){
-    if(hs.length<2) return 0;
-    const angs=hs.map(h=>h*(Math.PI/90));
-    const re=angs.reduce((s,a)=>s+Math.cos(a),0)/angs.length;
-    const im=angs.reduce((s,a)=>s+Math.sin(a),0)/angs.length;
-    const avg=Math.atan2(im,re);
-    const diffs=angs.map(a=>{let d=Math.abs(a-avg);if(d>Math.PI)d=2*Math.PI-d;return d;});
-    return Math.sqrt(diffs.reduce((s,d)=>s+d*d,0)/diffs.length)*(180/Math.PI);
-  }
-  const consArr=Object.values(colorHues).map(hs=>100*(1-hueStd(hs)/180));
-  const consScore=consArr.length?consArr.reduce((s,x)=>s+x,0)/consArr.length:0;
-
-  const w=weights||{pos:0.3,ratio:0.4,cons:0.3};
+// 评分来源：后端 /analyze 返回的 aesthetic{composition,richness,purity} 缓存在
+// m._aesthetic 上（只在分析成功时写一次），这里只是拿缓存的三个维度分做一次
+// 加权求和——纯算术，不发请求，权重滑杆拖动可以保持实时响应。
+// 对外字段名沿用 pos/ratio/cons/total/anchors，兼容偏好学习系统等既有读取点。
+function deriveScore(m){
+  const a=m._aesthetic;
+  if(!a) return null;
+  const w=(typeof S!=='undefined'&&S.weights)||{pos:0.3,ratio:0.4,cons:0.3};
   return {
-    pos:Math.round(posScore), ratio:Math.round(ratioScore),
-    cons:Math.round(consScore), anchors,
-    total:Math.round(w.pos*posScore+w.ratio*ratioScore+w.cons*consScore),
+    pos:Math.round(a.composition), ratio:Math.round(a.richness), cons:Math.round(a.purity),
+    anchors:pickAnchors(m.blocks),
+    total:Math.round(w.pos*a.composition + w.ratio*a.richness + w.cons*a.purity),
   };
 }
 
@@ -1091,7 +1113,7 @@ function recommendedScheme(profile){
 }
 
 function computePreferenceMatch(m, scheme, subjectRatio, profile){
-  if(!profile) return null;
+  if(!profile || !m.score) return null;
   const aff=Object.values(profile.schemeAffinity);
   const lo=Math.min(...aff), hi=Math.max(...aff), range=hi-lo;
   const schemeComp=range===0 ? 50 : ((profile.schemeAffinity[scheme]-lo)/range)*100;
@@ -1134,10 +1156,10 @@ function addImages(files){
           const blocks=traditionalBlocks(img,img.naturalWidth,img.naturalHeight);
           const aiR=mockAiRegions(blocks);
           const conflicts=detectConflicts(blocks,aiR,10);
-          const final=finalizeBlocks(blocks);
-          const score=computeScore(final,{pos:.3,ratio:.4,cons:.3});
+          // 评分不再上传时同步算：交给 bird_classification 后端的 /analyze，
+          // 结果缓存到 _aesthetic，上传后台自动触发分析（见 handleFiles）。
           GALLERY.push({id,name:f.name,dataURL,el:img,blocks,conflicts,
-            conflictChoice:{},conflictIdx:0,score,scheme:'thirds',ratio:20,liked:null,recognize:null});
+            conflictChoice:{},conflictIdx:0,score:null,_aesthetic:null,scheme:'thirds',ratio:20,liked:null,recognize:null});
           res();
         };
         img.src=dataURL;
@@ -1360,20 +1382,34 @@ function syncComposePage(){
   S.currentId=m.id;
   document.getElementById('composeNoImg').style.display='none';
   document.getElementById('composeHasImg').classList.remove('hidden');
-  // 重算 score（用当前权重）
-  const sc=computeScore(finalizeBlocks(m.blocks),S.weights);
+  // 用缓存的后端美学分（m._aesthetic）+ 当前权重重算加权总分，纯算术不发请求
+  const sc=deriveScore(m);
   m.score=sc;
-  // 更新 UI
+  const schemes=buildSchemes();
   const circ=2*Math.PI*28;
+  const heroMatchEl=document.getElementById('heroMatch');
+  if(!sc){
+    // 还没跑过识别台的 /analyze，评分暂缺
+    document.getElementById('ringArc').style.strokeDashoffset=circ;
+    document.getElementById('heroNum').textContent='—';
+    document.getElementById('heroScheme').textContent='方案：'+(schemes[m.scheme||'thirds'].name)+' · 分数 '+schemes[m.scheme||'thirds'].score.toFixed(2);
+    document.getElementById('heroImg').textContent='图片：'+m.name;
+    heroMatchEl.textContent='评分中…（去识别台跑一次分析即可拿到美学评分）';
+    document.getElementById('scPos').textContent='—'; document.getElementById('scPosBar').style.width='0%';
+    document.getElementById('scRatio').textContent='—'; document.getElementById('scRatioBar').style.width='0%';
+    document.getElementById('scCons').textContent='—'; document.getElementById('scConsBar').style.width='0%';
+    updateConflictBanner(m);
+    renderComposeSidePanel(computePreferenceProfile());
+    return;
+  }
+  // 更新 UI
   document.getElementById('ringArc').style.strokeDashoffset=circ*(1-sc.total/100);
   document.getElementById('heroNum').textContent=sc.total;
-  const schemes=buildSchemes();
   document.getElementById('heroScheme').textContent='方案：'+(schemes[m.scheme||'thirds'].name)+' · 分数 '+schemes[m.scheme||'thirds'].score.toFixed(2);
   document.getElementById('heroImg').textContent='图片：'+m.name;
   const profile=computePreferenceProfile();
   const match=computePreferenceMatch(m, m.scheme||'thirds', m.ratio||20, profile);
   const rec=recommendedScheme(profile);
-  const heroMatchEl=document.getElementById('heroMatch');
   if(match===null){
     heroMatchEl.textContent='偏好学习中…（还需 '+(MIN_SAMPLES-PREFS.length)+' 次评价即可解锁匹配度）';
   }else{
@@ -1480,10 +1516,12 @@ function syncCurateWeights(){
 }
 
 /* ============================================================
-   识别台（对接 recognize_server.py，从 bird_classification_v2.ipynb 提取的 ResNet50 服务）
+   识别台（对接 bird_classification_server.py：YOLOv8 检测 + DeepLabV3 分割
+   + CLIP 品种识别 + DeepSeek 中文百科/AI 点评 + 懒人模式一键优化）
    ============================================================ */
-const RECOGNIZE_API='http://localhost:5050';
+const BIRD_API='http://localhost:5051';
 let recServiceOnline=null;
+let lazyModeOn=false;
 
 async function checkRecognizeService(){
   const banner=document.getElementById('recServiceBanner');
@@ -1491,18 +1529,25 @@ async function checkRecognizeService(){
   const text=document.getElementById('recServiceText');
   if(!banner) return;
   try{
-    const r=await fetch(RECOGNIZE_API+'/health');
+    const r=await fetch(BIRD_API+'/health');
     if(!r.ok) throw new Error('bad status');
     const data=await r.json();
-    recServiceOnline=true;
-    banner.className='service-banner online';
-    dot.className='dot on';
-    text.textContent='识别服务在线 · 设备 '+data.device+' · '+data.num_classes+' 个类别';
+    const ready=data.yolo_loaded && data.deeplab_loaded && data.clip_loaded;
+    recServiceOnline=ready;
+    if(ready){
+      banner.className='service-banner online';
+      dot.className='dot on';
+      text.textContent='识别服务在线 · 设备 '+data.device;
+    }else{
+      banner.className='service-banner';
+      dot.className='dot busy';
+      text.textContent='识别服务已启动，模型加载中…';
+    }
   }catch(e){
     recServiceOnline=false;
     banner.className='service-banner offline';
     dot.className='dot';
-    text.innerHTML='识别服务未连接 · 请先运行 <code>python3 recognize_server.py</code>（默认监听 5050 端口）';
+    text.innerHTML='识别服务未连接 · 请先运行 <code>python3 bird_classification_server.py</code>（默认监听 5051 端口）';
   }
 }
 
@@ -1511,41 +1556,225 @@ async function dataURLToBlob(dataURL){
   return r.blob();
 }
 
-async function recognizeOne(m){
+async function analyzeOne(m){
   try{
     const blob=await dataURLToBlob(m.dataURL);
     const fd=new FormData();
     fd.append('image', blob, m.name);
-    const r=await fetch(RECOGNIZE_API+'/recognize', {method:'POST', body:fd});
+    fd.append('lazy_mode', lazyModeOn ? 'true' : 'false');
+    const r=await fetch(BIRD_API+'/analyze', {method:'POST', body:fd});
     const data=await r.json();
-    if(!r.ok || data.error) throw new Error(data.error||'识别失败');
-    m.recognize={topk:data.predictions.map(p=>[p.label,p.confidence]), ts:Date.now()};
+    if(!r.ok || data.error) throw new Error(data.error||'分析失败');
+    m.recognize={
+      birds:data.birds, resultImage:data.result_image_data_url,
+      critique:data.ai_critique, lazy:data.lazy_mode, ts:Date.now(),
+    };
+    m._aesthetic=data.aesthetic;
+    m.score=deriveScore(m);
   }catch(e){
     m.recognize={error:e.message||String(e)};
   }
   renderRecognizePage();
+  // 评分变了，优选台/构图台如果正显示着就顺手刷新
+  if(!document.getElementById('page-curate').classList.contains('hidden')) renderCuratePage();
+  if(!document.getElementById('page-compose').classList.contains('hidden')) syncComposePage();
 }
 
-async function recognizeAllUnrecognized(){
+async function analyzeAllUnrecognized(){
   await checkRecognizeService();
   if(!recServiceOnline) return;
   const targets=GALLERY.filter(m=>!m.recognize || m.recognize.error);
   for(const m of targets){
     m.recognize={pending:true};
     renderRecognizePage();
-    await recognizeOne(m);
+    await analyzeOne(m);
   }
 }
 
 function speciesTally(){
   const tally={};
   GALLERY.forEach(m=>{
-    if(m.recognize && m.recognize.topk){
-      const top=m.recognize.topk[0][0];
-      tally[top]=(tally[top]||0)+1;
-    }
+    (m.recognize && m.recognize.birds || []).forEach(b=>{
+      tally[b.species_en]=(tally[b.species_en]||0)+1;
+    });
   });
   return tally;
+}
+
+function birdRowHtml(b){
+  const pct=(b.species_confidence*100).toFixed(1);
+  const label=b.info && b.info.chinese_name ? `${b.species_en} · ${b.info.chinese_name}` : b.species_en;
+  const enc=b.info ? `<div class="rec-encyclopedia">
+      <div><b>学名</b>：${b.info.scientific_name||'—'}</div>
+      <div><b>简介</b>：${b.info.introduction||'—'}</div>
+      <div><b>栖息地</b>：${b.info.habitat||'—'}</div>
+      <div><b>食性</b>：${b.info.diet||'—'}</div>
+      <div><b>保护级别</b>：${b.info.conservation_status||'—'}</div>
+    </div>` : '';
+  return `<div class="rec-bird-row">
+    <img class="rec-crop" src="${b.crop_data_url}" alt="${b.species_en}">
+    <div class="rec-bird-info">
+      <div class="rtk-row">
+        <div class="rtk-top"><span class="rtk-label">${label}</span><span class="rtk-val">${pct}%</span></div>
+        <div class="rtk-track"><div class="rtk-fill" style="width:${pct}%"></div></div>
+      </div>
+      ${enc}
+    </div>
+  </div>`;
+}
+
+// DeepSeek 按 prompt 要求把点评包在 ```markdown ... ``` 代码块里，去掉首尾围栏，
+// 只留纯 markdown 正文。
+function stripMdFence(text){
+  const raw=String(text||'').trim();
+  if(!raw) return '';
+  const fenced=raw.match(/^```(?:markdown|md)?\s*\n([\s\S]*?)\n```\s*$/i);
+  if(fenced) return fenced[1].trim();
+  if(/^```/.test(raw)) return raw.replace(/^```[a-zA-Z]*\s*/,'').replace(/\s*```$/,'').trim();
+  return raw;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatInlineMd(text){
+  let t=escapeHtml(text);
+  t=t.replace(/`([^`]+)`/g,'<code class="md-code">$1</code>');
+  t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  t=t.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g,'<em>$1</em>');
+  t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,'<a class="md-link" href="$2" target="_blank" rel="noopener">$1</a>');
+  return t.replace(/\n/g,'<br>');
+}
+
+// 轻量 Markdown 渲染：覆盖标题、加粗、斜体、列表、引用、代码块和分隔线，
+// 不引入外部 markdown 库（单文件零依赖）。
+function renderMarkdownLite(md){
+  const raw=stripMdFence(md);
+  const lines=raw.split(/\r?\n/);
+  let html='';
+  let inList=false; let listType=null; let inCode=false; let codeLines=[];
+  const closeList=()=>{ if(inList){ html += listType==='ol' ? '</ol>' : '</ul>'; inList=false; listType=null; } };
+  const closeCode=()=>{ if(inCode){ html+=`<pre class="md-pre"><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`; inCode=false; codeLines=[]; } };
+  for(let i=0;i<lines.length;i++){
+    const rawLine=lines[i];
+    const line=rawLine.trim();
+    if(!line){ closeList(); continue; }
+    if(/^```/.test(line)){
+      closeList();
+      if(inCode) closeCode();
+      else { inCode=true; codeLines=[]; }
+      continue;
+    }
+    if(inCode){ codeLines.push(rawLine); continue; }
+    const h=/^(#{1,6})\s+(.*)$/.exec(line);
+    if(h){ closeList(); const level=Math.min(h[1].length,4); html+=`<h${level} class="md-h">${formatInlineMd(h[2])}</h${level}>`; continue; }
+    if(/^>\s+/.test(line)){ closeList(); html+=`<blockquote class="md-blockquote">${formatInlineMd(line.replace(/^>\s+/,''))}</blockquote>`; continue; }
+    if(/^[-*]\s+/.test(line)){ if(!inList||listType!=='ul'){ closeList(); html+='<ul class="md-ul">'; inList=true; listType='ul'; } html+=`<li>${formatInlineMd(line.replace(/^[-*]\s+/,''))}</li>`; continue; }
+    if(/^\d+[.)]\s+/.test(line)){ if(!inList||listType!=='ol'){ closeList(); html+='<ol class="md-ol">'; inList=true; listType='ol'; } html+=`<li>${formatInlineMd(line.replace(/^\d+[.)]\s+/,''))}</li>`; continue; }
+    if(/^[-*_]{3,}$/.test(line)){ closeList(); html+='<hr class="md-hr">'; continue; }
+    closeList();
+    html+=`<p class="md-p">${formatInlineMd(line)}</p>`;
+  }
+  closeCode(); closeList();
+  return html || '<p class="md-p" style="color:var(--ink-3);">暂无内容</p>';
+}
+
+function aestheticBarsHtml(a){
+  return `
+    <div class="sbr">
+      <div class="sbr-top"><span class="sbr-name">构图</span><span class="sbr-val">${a.composition}</span></div>
+      <div class="sbr-track"><div class="sbr-fill" style="width:${a.composition}%;background:var(--c-thirds)"></div></div>
+    </div>
+    <div class="sbr">
+      <div class="sbr-top"><span class="sbr-name">色彩丰富度</span><span class="sbr-val">${a.richness}</span></div>
+      <div class="sbr-track"><div class="sbr-fill" style="width:${a.richness}%;background:var(--c-golden)"></div></div>
+    </div>
+    <div class="sbr">
+      <div class="sbr-top"><span class="sbr-name">色彩纯净度</span><span class="sbr-val">${a.purity}</span></div>
+      <div class="sbr-track"><div class="sbr-fill" style="width:${a.purity}%;background:var(--c-sym)"></div></div>
+    </div>`;
+}
+
+const REPORT_DRAWER={currentId:null};
+
+function openReportDrawer(m){
+  if(!m) return;
+  REPORT_DRAWER.currentId=m.id;
+  document.getElementById('reportDrawer').classList.add('open');
+  renderReportDrawer();
+}
+
+function closeReportDrawer(){
+  document.getElementById('reportDrawer').classList.remove('open');
+  REPORT_DRAWER.currentId=null;
+}
+
+function renderReportDrawer(){
+  const m=GALLERY.find(x=>x.id===REPORT_DRAWER.currentId);
+  if(!m){ return; }
+  const mediaSrc=(m.recognize && m.recognize.resultImage) || m.dataURL;
+  const birds=(m.recognize && m.recognize.birds) || [];
+  const critique=(m.recognize && m.recognize.critique) || '';
+  const aesthetic=m._aesthetic;
+  const score=m.score;
+  const scoreItems=[];
+  if(aesthetic){
+    scoreItems.push(['构图', aesthetic.composition], ['色彩丰富度', aesthetic.richness], ['色彩纯净度', aesthetic.purity], ['综合', aesthetic.total]);
+  }else if(score){
+    scoreItems.push(['综合', score.total], ['锚点', score.pos], ['比例', score.ratio], ['一致性', score.cons]);
+  }
+  document.getElementById('reportDrawerTitle').textContent='完整报告 · '+m.name;
+  document.getElementById('reportDrawerBody').innerHTML=`
+    <div class="report-hero">
+      <div class="report-media"><img src="${mediaSrc}" alt="${m.name}"></div>
+      <div class="report-meta">
+        <div class="report-title">${m.name}</div>
+        <div class="report-sub">查看这张照片的识别结果、评分与 DeepSeek 说明。</div>
+        <div class="report-pill">${aesthetic ? '综合分 '+aesthetic.total : (score ? '综合分 '+score.total : '暂无评分')}</div>
+      </div>
+    </div>
+    <div class="report-section">
+      <div class="dl-title">美学得分</div>
+      ${scoreItems.length ? `<div class="report-score-grid">${scoreItems.map(([k,v])=>`<div class="report-score-item"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>` : '<div class="report-empty">暂无美学评分</div>'}
+    </div>
+    <div class="report-section">
+      <div class="dl-title">识别结果</div>
+      ${birds.length ? `<div class="report-birds">${birds.map(b=>`<div class="report-bird"><img src="${b.crop_data_url}" alt="${b.species_en}"><div><div class="name">${b.species_en}</div><div class="meta">置信度：${(b.species_confidence*100).toFixed(1)}%${b.info&&b.info.chinese_name?`<br>中文名：${b.info.chinese_name}`:''}${b.info&&b.info.scientific_name?`<br>学名：${b.info.scientific_name}`:''}</div></div></div>`).join('')}</div>` : '<div class="report-empty">未检测到鸟类</div>'}
+    </div>
+    <div class="report-section">
+      <div class="dl-title">DeepSeek 说明</div>
+      <div class="report-critique">${renderMarkdownLite(stripMdFence(critique))}</div>
+    </div>
+  `;
+}
+
+function recognizedBodyHtml(m){
+  const birds=m.recognize.birds;
+  const a=m._aesthetic;
+  let html = birds.length
+    ? '<div class="rec-birds">'+birds.map(birdRowHtml).join('')+'</div>'
+    : '<div class="rec-pending">未检测到鸟类</div>';
+  if(a){
+    html += `<div class="rec-aesthetic">${aestheticBarsHtml(a)}
+      <div class="rec-aesthetic-total"><span>综合美学得分</span><b>${a.total}</b></div>
+    </div>`;
+  }
+  if(m.recognize.critique){
+    html += `<div class="rec-critique">${renderMarkdownLite(stripMdFence(m.recognize.critique))}</div>`;
+  }
+  if(a || m.recognize.critique){
+    html += `<button class="btn sm" data-report="${m.id}" style="width:100%;margin-bottom:13px;">
+      <svg class="ic"><use href="#ic-target"/></svg>查看完整报告</button>`;
+  }
+  if(m.recognize.lazy && m.recognize.lazy.applied){
+    html += `<div class="rec-lazy">
+      <div class="dl-title">懒人模式：自动裁剪 + 色彩微调</div>
+      <img class="rec-lazy-img" src="${m.recognize.lazy.optimized_image_data_url}" alt="优化后">
+      <a class="btn sm" href="${m.recognize.lazy.optimized_image_data_url}" download="neatpic_optimized_${m.name}"><svg class="ic"><use href="#ic-save"/></svg>下载优化图</a>
+    </div>`;
+  }
+  return html;
 }
 
 function renderRecognizePage(){
@@ -1556,34 +1785,35 @@ function renderRecognizePage(){
 
   const tallyEntries=Object.entries(speciesTally());
   document.getElementById('recTally').textContent = tallyEntries.length
-    ? '已识别 '+tallyEntries.length+' 个物种：'+tallyEntries.map(([k,v])=>k+'×'+v).join('，')
+    ? '已识别 '+tallyEntries.length+' 个物种（按检测到的每只鸟统计）：'+tallyEntries.map(([k,v])=>k+'×'+v).join('，')
     : '尚未识别任何照片';
 
   document.getElementById('recGrid').innerHTML = GALLERY.map(m=>{
     let body;
     if(m.recognize && m.recognize.pending){
-      body='<div class="rec-pending">识别中…</div>';
+      body='<div class="rec-pending">分析中…（检测+分割+品种识别+百科+点评，可能需要几秒到十几秒）</div>';
     }else if(m.recognize && m.recognize.error){
-      body=`<div class="rec-error">识别失败：${m.recognize.error}</div>
+      body=`<div class="rec-error">分析失败：${m.recognize.error}</div>
         <button class="btn sm" data-retry="${m.id}" style="margin-top:8px;width:100%;">重试</button>`;
-    }else if(m.recognize && m.recognize.topk){
-      body='<div class="rec-topk">'+m.recognize.topk.map(([label,conf])=>`
-        <div class="rtk-row">
-          <div class="rtk-top"><span class="rtk-label">${label}</span><span class="rtk-val">${(conf*100).toFixed(1)}%</span></div>
-          <div class="rtk-track"><div class="rtk-fill" style="width:${(conf*100).toFixed(1)}%"></div></div>
-        </div>`).join('')+'</div>';
+    }else if(m.recognize && m.recognize.birds){
+      body=recognizedBodyHtml(m);
     }else{
-      body=`<button class="btn sm" data-recognize="${m.id}" style="width:100%;"><svg class="ic"><use href="#ic-recognize"/></svg>识别此图</button>`;
+      body=`<button class="btn sm" data-recognize="${m.id}" style="width:100%;"><svg class="ic"><use href="#ic-recognize"/></svg>分析此图</button>`;
     }
-    return `<div class="rec-card"><img class="rec-img" src="${m.dataURL}" alt="${m.name}">
+    const mediaSrc=(m.recognize && m.recognize.resultImage) || m.dataURL;
+    return `<div class="rec-card">
+      <div class="rec-card-media"><img class="rec-media-img" src="${mediaSrc}" alt="${m.name}"></div>
       <div class="rec-body"><div class="rec-name" title="${m.name}">${m.name}</div>${body}</div></div>`;
   }).join('');
 
   document.getElementById('recGrid').querySelectorAll('[data-recognize]').forEach(btn=>{
-    btn.onclick=()=>{ const m=GALLERY.find(x=>x.id===btn.dataset.recognize); if(m){ m.recognize={pending:true}; renderRecognizePage(); recognizeOne(m); } };
+    btn.onclick=()=>{ const m=GALLERY.find(x=>x.id===btn.dataset.recognize); if(m){ m.recognize={pending:true}; renderRecognizePage(); analyzeOne(m); } };
   });
   document.getElementById('recGrid').querySelectorAll('[data-retry]').forEach(btn=>{
-    btn.onclick=()=>{ const m=GALLERY.find(x=>x.id===btn.dataset.retry); if(m){ m.recognize={pending:true}; renderRecognizePage(); recognizeOne(m); } };
+    btn.onclick=()=>{ const m=GALLERY.find(x=>x.id===btn.dataset.retry); if(m){ m.recognize={pending:true}; renderRecognizePage(); analyzeOne(m); } };
+  });
+  document.getElementById('recGrid').querySelectorAll('[data-report]').forEach(btn=>{
+    btn.onclick=()=>{ const m=GALLERY.find(x=>x.id===btn.dataset.report); if(m){ openReportDrawer(m); } };
   });
 }
 
@@ -1600,18 +1830,32 @@ function renderCuratePage(){
   if(!GALLERY.length){ noImg.style.display=''; hasImg.classList.add('hidden'); return; }
   noImg.style.display='none'; hasImg.classList.remove('hidden');
 
-  // 用当前共享权重重算所有照片的分数（只是重新调用 computeScore，不改动其内部逻辑）
-  GALLERY.forEach(m=>{ m.score=computeScore(finalizeBlocks(m.blocks), S.weights); });
+  // 只对已经缓存了后端美学分（m._aesthetic）的照片重算加权总分——纯算术，
+  // 不再像以前那样每次渲染/每次拖阈值滑杆都对全部照片重新做像素级 HSV 提取。
+  GALLERY.forEach(m=>{ if(m._aesthetic) m.score=deriveScore(m); });
 
   let list=[...GALLERY];
-  if(curateSort==='total_desc') list.sort((a,b)=>b.score.total-a.score.total);
-  else if(curateSort==='total_asc') list.sort((a,b)=>a.score.total-b.score.total);
+  if(curateSort==='total_desc') list.sort((a,b)=>(b.score?b.score.total:-1)-(a.score?a.score.total:-1));
+  else if(curateSort==='total_asc') list.sort((a,b)=>(a.score?a.score.total:101)-(b.score?b.score.total:101));
   else if(curateSort==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
 
-  const passCount=list.filter(m=>m.score.total>=curateThreshold).length;
+  const scored=list.filter(m=>m.score);
+  const passCount=scored.filter(m=>m.score.total>=curateThreshold).length;
   document.getElementById('curateCount').textContent=`达标 ${passCount} / 共 ${list.length}`;
 
   document.getElementById('curateGrid').innerHTML = list.map(m=>{
+    if(!m.score){
+      const checked=curateSelected.has(m.id);
+      return `<div class="curate-card below-thresh" data-id="${m.id}">
+        <input type="checkbox" class="cc-check" data-check="${m.id}" ${checked?'checked':''}>
+        <img class="cc-img" src="${m.dataURL}" alt="${m.name}">
+        <span class="cc-score">—</span>
+        <div class="cc-body">
+          <div class="cc-name" title="${m.name}">${m.name}</div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:5px;">评分中…去识别台分析</div>
+        </div>
+      </div>`;
+    }
     const below = m.score.total < curateThreshold;
     const checked = curateSelected.has(m.id);
     return `<div class="curate-card${below?' below-thresh':''}" data-id="${m.id}">
@@ -1666,6 +1910,9 @@ async function handleFiles(files){
   if(!document.getElementById('page-compose').classList.contains('hidden')) syncComposePage();
   if(!document.getElementById('page-recognize').classList.contains('hidden')) renderRecognizePage();
   if(!document.getElementById('page-curate').classList.contains('hidden')) renderCuratePage();
+  // 后台自动开始分析新上传的照片（拿美学评分+品种识别），不阻塞上传流程；
+  // 识别服务没启动的话 analyzeAllUnrecognized 会自己检测到并直接跳过。
+  analyzeAllUnrecognized();
 }
 
 /* ============================================================
@@ -1717,9 +1964,15 @@ function bindAll(){
   document.getElementById('tipGoGallery').onclick=()=>goPage('gallery');
 
   // 识别台
-  document.getElementById('btnRecognizeAll').onclick=recognizeAllUnrecognized;
+  document.getElementById('btnRecognizeAll').onclick=analyzeAllUnrecognized;
+  document.getElementById('recLazyMode').onchange=e=>{ lazyModeOn=e.target.checked; };
   document.getElementById('btnExportRecognize').onclick=()=>{
-    const records=GALLERY.map(m=>({name:m.name, topk:(m.recognize&&m.recognize.topk)||null}));
+    const records=GALLERY.map(m=>({
+      name:m.name,
+      birds:(m.recognize&&m.recognize.birds||[]).map(b=>({
+        species_en:b.species_en, chinese_name:b.info&&b.info.chinese_name, confidence:b.species_confidence,
+      })),
+    }));
     exportJson({records}, 'neatpic_recognize.json');
   };
 
@@ -1732,11 +1985,11 @@ function bindAll(){
     renderCuratePage();
   };
   document.getElementById('curateSelectAll').onclick=()=>{
-    GALLERY.forEach(m=>{ if(m.score.total>=curateThreshold) curateSelected.add(m.id); });
+    GALLERY.forEach(m=>{ if(m.score && m.score.total>=curateThreshold) curateSelected.add(m.id); });
     renderCuratePage();
   };
   document.getElementById('curateExport').onclick=()=>{
-    const items=GALLERY.filter(m=>curateSelected.has(m.id)).map(m=>({
+    const items=GALLERY.filter(m=>curateSelected.has(m.id) && m.score).map(m=>({
       name:m.name, total:m.score.total, pos:m.score.pos, ratio:m.score.ratio, cons:m.score.cons,
       scheme:m.scheme||'thirds', subjectRatio:m.ratio||20,
     }));
@@ -1787,6 +2040,9 @@ function bindAll(){
       scheme_score:+sc.score.toFixed(4),aesthetic_score:m.score,
       weights:S.weights,image:m.name},'neatpic_info.json');
   };
+
+  // 报告抽屉
+  document.getElementById('reportDrawerClose').onclick=closeReportDrawer;
 
   // 抽屉
   document.getElementById('drawerClose').onclick=closeDrawer;

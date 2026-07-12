@@ -1,0 +1,14 @@
+torch
+torchvision
+ultralytics
+opencv-python
+numpy
+pillow
+requests
+flask
+python-dotenv
+# CLIP is NOT the PyPI "clip" package -- installing that name will silently
+# shadow the real one. Install OpenAI's CLIP directly:
+#   pip install git+https://github.com/openai/CLIP.git
+ftfy
+regex

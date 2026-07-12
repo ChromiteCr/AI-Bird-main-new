@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.DS_Store
+bird_classification/.env
+bird_classification/test_results/
