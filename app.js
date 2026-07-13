@@ -234,7 +234,8 @@ function addImages(files){
           // 评分不再上传时同步算：交给 bird_classification 后端的 /analyze，
           // 结果缓存到 _aesthetic，上传后台自动触发分析（见 handleFiles）。
           GALLERY.push({id,name:f.name,dataURL,el:img,blocks,conflicts,
-            conflictChoice:{},conflictIdx:0,score:null,_aesthetic:null,scheme:'thirds',ratio:20,liked:null,recognize:null});
+            conflictChoice:{},conflictIdx:0,score:null,_aesthetic:null,scheme:'thirds',ratio:20,liked:null,recognize:null,
+            edit:{brightness:100,contrast:100,saturate:100,hue:0}});
           res();
         };
         img.src=dataURL;
@@ -274,6 +275,7 @@ function renderGallery(filter){
       ${matchBadgeHtml(m, profile)}
       <div class="gc-actions">
         <div class="gac-btn compose" data-id="${m.id}"><svg class="ic"><use href="#ic-compose"/></svg>调试构图</div>
+        <div class="gac-btn detail" data-detail="${m.id}" title="详情 / 调色"><svg class="ic"><use href="#ic-target"/></svg></div>
         <div class="gac-btn" data-del="${m.id}"><svg class="ic"><use href="#ic-trash"/></svg></div>
       </div>
     </div>
@@ -282,6 +284,9 @@ function renderGallery(filter){
   // 绑定点击
   grid.querySelectorAll('.gac-btn.compose').forEach(btn=>{
     btn.onclick=e=>{e.stopPropagation();openDrawer(btn.dataset.id);};
+  });
+  grid.querySelectorAll('[data-detail]').forEach(btn=>{
+    btn.onclick=e=>{e.stopPropagation();const m=GALLERY.find(x=>x.id===btn.dataset.detail);if(m)openReportDrawer(m);};
   });
   grid.querySelectorAll('[data-del]').forEach(btn=>{
     btn.onclick=e=>{e.stopPropagation();deleteImg(btn.dataset.del);};
@@ -676,16 +681,26 @@ function speciesTally(){
   return tally;
 }
 
-function birdRowHtml(b){
+// seenSpecies：跨整页共享的 Set，同一物种的百科介绍只在第一次出现时完整展示，
+// 之后再遇到同物种只提示"已在上方展示过"，不重复整段百科文字。
+function birdRowHtml(b, seenSpecies){
   const pct=(b.species_confidence*100).toFixed(1);
   const label=b.info && b.info.chinese_name ? `${b.species_en} · ${b.info.chinese_name}` : b.species_en;
-  const enc=b.info ? `<div class="rec-encyclopedia">
-      <div><b>学名</b>：${b.info.scientific_name||'—'}</div>
-      <div><b>简介</b>：${b.info.introduction||'—'}</div>
-      <div><b>栖息地</b>：${b.info.habitat||'—'}</div>
-      <div><b>食性</b>：${b.info.diet||'—'}</div>
-      <div><b>保护级别</b>：${b.info.conservation_status||'—'}</div>
-    </div>` : '';
+  let enc='';
+  if(b.info){
+    if(seenSpecies && seenSpecies.has(b.species_en)){
+      enc=`<div class="rec-encyclopedia rec-encyclopedia-ref">该物种的百科介绍已在上方展示过</div>`;
+    }else{
+      enc=`<div class="rec-encyclopedia">
+        <div><b>学名</b>：${b.info.scientific_name||'—'}</div>
+        <div><b>简介</b>：${b.info.introduction||'—'}</div>
+        <div><b>栖息地</b>：${b.info.habitat||'—'}</div>
+        <div><b>食性</b>：${b.info.diet||'—'}</div>
+        <div><b>保护级别</b>：${b.info.conservation_status||'—'}</div>
+      </div>`;
+      if(seenSpecies) seenSpecies.add(b.species_en);
+    }
+  }
   return `<div class="rec-bird-row">
     <img class="rec-crop" src="${b.crop_data_url}" alt="${b.species_en}">
     <div class="rec-bird-info">
@@ -799,14 +814,40 @@ function renderReportDrawer(){
   }else if(score){
     scoreItems.push(['综合', score.total], ['锚点', score.pos], ['比例', score.ratio], ['一致性', score.cons]);
   }
-  document.getElementById('reportDrawerTitle').textContent='完整报告 · '+m.name;
+  document.getElementById('reportDrawerTitle').textContent='照片详情 · '+m.name;
   document.getElementById('reportDrawerBody').innerHTML=`
     <div class="report-hero">
       <div class="report-media"><img src="${mediaSrc}" alt="${m.name}"></div>
       <div class="report-meta">
         <div class="report-title">${m.name}</div>
-        <div class="report-sub">查看这张照片的识别结果、评分与 DeepSeek 说明。</div>
+        <div class="report-sub">查看这张照片的识别结果、评分、DeepSeek 说明，并可在下方调整颜色后导出。</div>
         <div class="report-pill">${aesthetic ? '综合分 '+aesthetic.total : (score ? '综合分 '+score.total : '暂无评分')}</div>
+      </div>
+    </div>
+    <div class="report-section">
+      <div class="dl-title">颜色调整</div>
+      <div class="edit-preview-wrap">
+        <img id="editPreviewImg" class="edit-preview-img" src="${m.dataURL}" alt="${m.name}">
+      </div>
+      <div class="sl-row">
+        <div class="sl-lab"><span>亮度</span><b id="editBrightnessD">${m.edit.brightness}%</b></div>
+        <input type="range" id="editBrightness" min="50" max="150" value="${m.edit.brightness}">
+      </div>
+      <div class="sl-row">
+        <div class="sl-lab"><span>对比度</span><b id="editContrastD">${m.edit.contrast}%</b></div>
+        <input type="range" id="editContrast" min="50" max="150" value="${m.edit.contrast}">
+      </div>
+      <div class="sl-row">
+        <div class="sl-lab"><span>饱和度</span><b id="editSaturateD">${m.edit.saturate}%</b></div>
+        <input type="range" id="editSaturate" min="0" max="200" value="${m.edit.saturate}">
+      </div>
+      <div class="sl-row">
+        <div class="sl-lab"><span>色相偏移</span><b id="editHueD">${m.edit.hue}°</b></div>
+        <input type="range" id="editHue" min="-180" max="180" value="${m.edit.hue}">
+      </div>
+      <div class="btn-row">
+        <button class="btn sm" id="editReset">重置</button>
+        <button class="btn sm pri" id="editExport"><svg class="ic"><use href="#ic-save"/></svg>导出调色图片</button>
       </div>
     </div>
     <div class="report-section">
@@ -822,13 +863,56 @@ function renderReportDrawer(){
       <div class="report-critique">${renderMarkdownLite(stripMdFence(critique))}</div>
     </div>
   `;
+  bindEditControls(m);
 }
 
-function recognizedBodyHtml(m){
+/* ============================================================
+   颜色调整与导出（详情抽屉内，per-photo，一定范围内的亮度/对比度/
+   饱和度/色相调整，导出走 canvas ctx.filter，与预览所见一致）
+   ============================================================ */
+function editFilterCss(e){
+  return `brightness(${e.brightness}%) contrast(${e.contrast}%) saturate(${e.saturate}%) hue-rotate(${e.hue}deg)`;
+}
+
+function bindEditControls(m){
+  const img=document.getElementById('editPreviewImg');
+  if(!img) return;
+  const bEl=document.getElementById('editBrightness'), bD=document.getElementById('editBrightnessD');
+  const cEl=document.getElementById('editContrast'), cD=document.getElementById('editContrastD');
+  const sEl=document.getElementById('editSaturate'), sD=document.getElementById('editSaturateD');
+  const hEl=document.getElementById('editHue'), hD=document.getElementById('editHueD');
+  function refresh(){
+    bD.textContent=m.edit.brightness+'%'; cD.textContent=m.edit.contrast+'%';
+    sD.textContent=m.edit.saturate+'%'; hD.textContent=m.edit.hue+'°';
+    img.style.filter=editFilterCss(m.edit);
+  }
+  bEl.oninput=()=>{ m.edit.brightness=+bEl.value; refresh(); };
+  cEl.oninput=()=>{ m.edit.contrast=+cEl.value; refresh(); };
+  sEl.oninput=()=>{ m.edit.saturate=+sEl.value; refresh(); };
+  hEl.oninput=()=>{ m.edit.hue=+hEl.value; refresh(); };
+  document.getElementById('editReset').onclick=()=>{
+    m.edit={brightness:100,contrast:100,saturate:100,hue:0};
+    bEl.value=100; cEl.value=100; sEl.value=100; hEl.value=0;
+    refresh();
+  };
+  document.getElementById('editExport').onclick=()=>exportEditedImage(m);
+  refresh();
+}
+
+function exportEditedImage(m){
+  const cvs=document.createElement('canvas');
+  cvs.width=m.el.naturalWidth; cvs.height=m.el.naturalHeight;
+  const ctx=cvs.getContext('2d');
+  ctx.filter=editFilterCss(m.edit);
+  ctx.drawImage(m.el,0,0,cvs.width,cvs.height);
+  exportPng(cvs,'neatpic_edited_'+m.name);
+}
+
+function recognizedBodyHtml(m, seenSpecies){
   const birds=m.recognize.birds;
   const a=m._aesthetic;
   let html = birds.length
-    ? '<div class="rec-birds">'+birds.map(birdRowHtml).join('')+'</div>'
+    ? '<div class="rec-birds">'+birds.map(b=>birdRowHtml(b, seenSpecies)).join('')+'</div>'
     : '<div class="rec-pending">未检测到鸟类</div>';
   if(a){
     html += `<div class="rec-aesthetic">${aestheticBarsHtml(a)}
@@ -840,7 +924,7 @@ function recognizedBodyHtml(m){
   }
   if(a || m.recognize.critique){
     html += `<button class="btn sm" data-report="${m.id}" style="width:100%;margin-bottom:13px;">
-      <svg class="ic"><use href="#ic-target"/></svg>查看完整报告</button>`;
+      <svg class="ic"><use href="#ic-target"/></svg>查看详情 / 调色导出</button>`;
   }
   if(m.recognize.lazy && m.recognize.lazy.applied){
     html += `<div class="rec-lazy">
@@ -850,6 +934,35 @@ function recognizedBodyHtml(m){
     </div>`;
   }
   return html;
+}
+
+// 一张照片可能检测到多只鸟；取置信度最高的一只作为这张照片的"主体物种"，
+// 分组、排序都按这个主体物种走。
+function primarySpeciesOf(m){
+  const birds=(m.recognize && m.recognize.birds) || [];
+  if(!birds.length) return null;
+  return birds.reduce((best,b)=>(!best||b.species_confidence>best.species_confidence)?b:best, null).species_en;
+}
+
+// 把图库按识别状态/物种分桶：已出结果的按主体物种分组（同物种放一起），
+// 其余按"待识别/分析中/识别失败/未检测到鸟类"单独归类，不参与物种分组。
+function groupGalleryBySpecies(){
+  const groups=new Map();
+  const notStarted=[], pending=[], errored=[], noBird=[];
+  GALLERY.forEach(m=>{
+    if(m.recognize && m.recognize.pending){ pending.push(m); return; }
+    if(m.recognize && m.recognize.error){ errored.push(m); return; }
+    if(m.recognize && m.recognize.birds){
+      if(!m.recognize.birds.length){ noBird.push(m); return; }
+      const sp=primarySpeciesOf(m);
+      if(!groups.has(sp)) groups.set(sp,{species:sp,photos:[]});
+      groups.get(sp).photos.push(m);
+      return;
+    }
+    notStarted.push(m);
+  });
+  const groupList=[...groups.values()].sort((a,b)=>b.photos.length-a.photos.length);
+  return {groupList, notStarted, pending, errored, noBird};
 }
 
 function renderRecognizePage(){
@@ -863,7 +976,10 @@ function renderRecognizePage(){
     ? '已识别 '+tallyEntries.length+' 个物种（按检测到的每只鸟统计）：'+tallyEntries.map(([k,v])=>k+'×'+v).join('，')
     : '尚未识别任何照片';
 
-  document.getElementById('recGrid').innerHTML = GALLERY.map(m=>{
+  // 同一物种的百科介绍只展示一次：这个 Set 在整页范围内共享，谁先渲染到谁展示完整版
+  const seenSpecies=new Set();
+
+  function photoCardHtml(m){
     let body;
     if(m.recognize && m.recognize.pending){
       body='<div class="rec-pending">分析中…（检测+分割+品种识别+百科+点评，可能需要几秒到十几秒）</div>';
@@ -871,7 +987,7 @@ function renderRecognizePage(){
       body=`<div class="rec-error">分析失败：${m.recognize.error}</div>
         <button class="btn sm" data-retry="${m.id}" style="margin-top:8px;width:100%;">重试</button>`;
     }else if(m.recognize && m.recognize.birds){
-      body=recognizedBodyHtml(m);
+      body=recognizedBodyHtml(m, seenSpecies);
     }else{
       body=`<button class="btn sm" data-recognize="${m.id}" style="width:100%;"><svg class="ic"><use href="#ic-recognize"/></svg>分析此图</button>`;
     }
@@ -879,7 +995,28 @@ function renderRecognizePage(){
     return `<div class="rec-card">
       <div class="rec-card-media"><img class="rec-media-img" src="${mediaSrc}" alt="${m.name}"></div>
       <div class="rec-body"><div class="rec-name" title="${m.name}">${m.name}</div>${body}</div></div>`;
-  }).join('');
+  }
+
+  function groupSectionHtml(title, photos){
+    if(!photos.length) return '';
+    return `<div class="rec-species-group">
+      <div class="rec-species-head"><span class="rec-species-name">${title}</span><span class="rec-species-count">${photos.length} 张</span></div>
+      <div class="rec-grid">${photos.map(photoCardHtml).join('')}</div>
+    </div>`;
+  }
+
+  const {groupList, notStarted, pending, errored, noBird} = groupGalleryBySpecies();
+  let html='';
+  groupList.forEach(g=>{
+    const firstBird=g.photos[0].recognize.birds.find(b=>b.species_en===g.species);
+    const cname=firstBird && firstBird.info && firstBird.info.chinese_name;
+    html += groupSectionHtml(cname?`${g.species} · ${cname}`:g.species, g.photos);
+  });
+  html += groupSectionHtml('待识别', notStarted);
+  html += groupSectionHtml('分析中', pending);
+  html += groupSectionHtml('未检测到鸟类', noBird);
+  html += groupSectionHtml('识别失败', errored);
+  document.getElementById('recGrid').innerHTML = html;
 
   document.getElementById('recGrid').querySelectorAll('[data-recognize]').forEach(btn=>{
     btn.onclick=()=>{ const m=GALLERY.find(x=>x.id===btn.dataset.recognize); if(m){ m.recognize={pending:true}; renderRecognizePage(); analyzeOne(m); } };

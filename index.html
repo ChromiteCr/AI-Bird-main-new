@@ -337,7 +337,7 @@
     <div class="ph">
       <div class="eyebrow">Stage 02 · Recognize</div>
       <h1>识别台 · Recognize</h1>
-      <p>YOLOv8 检测 + DeepLabV3 分割 + CLIP 品种识别 + DeepSeek 中文百科/AI 点评 · 对接 <code>bird_classification_server.py</code></p>
+      <p>YOLOv8 检测 + DeepLabV3 分割 + CLIP 品种识别 + DeepSeek 中文百科/AI 点评 · 对接 <code>bird_classification_server.py</code> · 按物种分组展示，同物种百科仅展示一次</p>
     </div>
 
     <div id="recNoImg" class="no-img-tip">
@@ -359,7 +359,7 @@
         <button class="btn sm" id="btnExportRecognize"><svg class="ic"><use href="#ic-json"/></svg>导出识别记录</button>
       </div>
 
-      <div class="rec-grid" id="recGrid"></div>
+      <div class="rec-groups" id="recGrid"></div>
     </div>
   </section>
   <section id="page-curate" class="hidden">
@@ -419,7 +419,7 @@
 <!-- ===================== 完整报告抽屉 ===================== -->
 <div class="report-drawer" id="reportDrawer">
   <div class="drawer-head">
-    <h3 id="reportDrawerTitle">完整报告</h3>
+    <h3 id="reportDrawerTitle">照片详情</h3>
     <button class="btn sm" id="reportDrawerClose">✕ 关闭</button>
   </div>
   <div class="drawer-body report-drawer-body" id="reportDrawerBody"></div>
